@@ -1,0 +1,48 @@
+.panels {
+    
+}
+
+#canvasdiv, #paneldiv {
+    
+}
+
+#paneldiv {
+    overflow-y: scroll;
+    height: 100vh;
+}
+
+.panel {
+    width: 300px;
+    margin: 1px;
+    padding: 1px;
+    display: block;
+}
+
+.musicspace {
+
+//    height: 100vh;
+//    width: 100vw;
+//    width: calc(100vw - 304px);
+
+}
+
+.table-cell {
+    vertical-align: top;
+}
+
+body {
+    margin: 0;
+}
+
+.panel-heading {
+    background-color: #eee;  
+}
+
+.panel-contents {
+    overflow: hidden;
+}
+
+.hide {
+    display: none;
+}
+

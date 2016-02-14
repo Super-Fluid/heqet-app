@@ -1,0 +1,41 @@
+<!doctype html>
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <link rel="stylesheet" type="text/css" href="haskell.css"/>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script src="haskell.js"></script>
+  <script type="text/javascript" charset="utf-8">
+    // Run the js that threepenny-gui uses
+    Haskell.initFFI();
+
+    function resizeCanvas() {
+        var canvas = $(".musicspace")[0];
+        var context = canvas.getContext('2d');
+        context.canvas.height = $(window).height();
+        context.canvas.width = $(window).width() - 304;
+    }
+    
+    // make the panels hide and show when you
+    // click their headers, and size the canvas
+    // appropriately. Wait until they exist
+    // first.
+    setTimeout(function(){
+        $(document).ready(function(){
+            $(".panel-heading").on("click",function(e) {
+                $(this).parent().children(".panel-contents").toggleClass("hide");
+            });
+            $(".panel-contents").addClass("hide");
+            resizeCanvas();
+        });
+    }, 500);
+    
+    // resize the canvas when the window changes size
+    $(window).resize(resizeCanvas);
+    
+  </script>
+</head>
+<body>
+  <noscript>Please enable JavaScript.</noscript>
+</body>
+</html>
