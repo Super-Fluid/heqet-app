@@ -1,12 +1,12 @@
 import Control.Monad
 
+import HeqetApp.Types
+
 import qualified Graphics.UI.Threepenny as UI
 import Graphics.UI.Threepenny.Core
 import Graphics.UI.Threepenny.Attributes
 import Graphics.UI.Threepenny.Events
 import Data.IORef
-
-type ApplicationState = Int
 
 main :: IO ()
 main = do
@@ -20,21 +20,21 @@ setup window = do
     paneldiv <- UI.div # set UI.id_ "paneldiv"
     canvas <- UI.canvas #. "musicspace"
     return canvasdiv #+ [return canvas]
-    applicationState <- liftIO $ newIORef 100
+    applicationState <- liftIO $ newIORef (100,())
     return paneldiv #+ [column $ map ($ applicationState) [navigation, file, edit, notation, music, select, history]]
     getBody window #+ [row [return canvasdiv, return paneldiv]]
     UI.addStyleSheet window "main.css"
     
     on mousedown canvas $ \e -> do
         old <- liftIO $ readIORef applicationState
-        liftIO $ writeIORef applicationState (100)
+        liftIO $ writeIORef applicationState (100,())
     
     timer <- UI.timer # set UI.interval 50
     redrawTick <- accumE (0::Int) $ (+1) <$ UI.tick timer
     onEvent redrawTick $ \stepNum -> do
         canvas # UI.clearCanvas
         canvas # set' UI.fillStyle (UI.htmlColor "black")
-        l <- liftIO $ readIORef applicationState
+        (l,_) <- liftIO $ readIORef applicationState
         canvas # UI.fillRect (100,100) (fromIntegral l) 50
 
     UI.start timer
@@ -43,10 +43,10 @@ setup window = do
 musicspace :: UI Element
 musicspace = UI.canvas #. "musicspace"
 
-file, edit, notation, music, select, history :: (IORef ApplicationState) -> UI Element
-navigation state = UI.div # set text "<<< << < > >> >>> up down (+) (-)"
+file, edit, notation, music, select, history :: (IORef AppState) -> UI Element
+navigation state = UI.div # set text "<<< << < > >> >>> up down >-< <-> (+) (-)"
 file state = makeFooPanel state "file"
-edit state = makeDefaultPanel state "edit" [((+50),"make longer")]
+edit state = makeDefaultPanel state "edit" [((\(a,b)->(a+50,b)),"make longer")]
 notation state = makeFooPanel state "notation"
 music state = makeFooPanel state "music"
 select state = makeFooPanel state "select"
@@ -54,7 +54,7 @@ history state = makeFooPanel state "history"
 
 foo = UI.div # set text "fooasld;;;;;;;;;;fjkkljds flsklfs dkljlkdfs lsklsksdkj flksdjfa ;sjflaks dfioeqrgjnoeqr nbvo[qerbnoqen voq[envo[qerignvo qeirfjkkljdsflsklfsdkljlkdfslsklsksdkj flksdjf a;sjflaksd fioeqrgj noeqrnbvo[qerbn oqenvoq[envo[qerignvoqeirfjkkljd sflsklfs dkljlkdfslsklsk sdkjflksdjfa;sj flaksdfioeqrgjnoe qrnbvo[qerbnoqe  nvoq[en vo[qerignvoq eirfjkkl jdsflsklfsdkljlkdfslsklsksdkjflksdjfa;sjflaksdfioeqrgjnoeqrnbvo[qerbnoqenvoq[envo[qerignvoqeirfjkkljdsf lsklfsdkljl kdfslsklsks dkjflksdjfa;s jflaksdfioeq rgjnoeqrnbvo[ qerbnoqenvo q[envo[qer ignvoqeir"
 
-makeFooPanel :: (IORef ApplicationState)  -> String -> UI Element
+makeFooPanel :: (IORef AppState)  -> String -> UI Element
 makeFooPanel _ s = do
     p <- UI.div #. "panel"
     heading <- UI.div # set text s #. "panel-heading"
@@ -63,7 +63,7 @@ makeFooPanel _ s = do
     element p #+ [return heading, return contents #. "panel-contents"]
     return p
 
-makeDefaultPanel :: (IORef ApplicationState)  -> String -> [(ApplicationState -> ApplicationState, String)] -> UI Element
+makeDefaultPanel :: (IORef AppState)  -> String -> [(AppState -> AppState, String)] -> UI Element
 makeDefaultPanel state s fs = do
     p <- UI.div #. "panel"
     heading <- UI.div # set text s #. "panel-heading"
@@ -72,7 +72,7 @@ makeDefaultPanel state s fs = do
     element p #+ [return heading, return contents #. "panel-contents"]
     return p
 
-makeDefaultButton :: (IORef ApplicationState) -> (ApplicationState -> ApplicationState, String) -> UI Element
+makeDefaultButton :: (IORef AppState) -> (AppState -> AppState, String) -> UI Element
 makeDefaultButton state (f,desc) = do
     b <- UI.button # set text desc
     on click b $ const $ do
