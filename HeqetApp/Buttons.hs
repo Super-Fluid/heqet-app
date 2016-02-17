@@ -55,14 +55,54 @@ uiTotalButton desc f state = do
     return b
 
 {-
-An "IO" button (always total) can do io, like
-saving to a file.
+An "IO" button (always total) can do is the 
+same type as a UI button, but is allowed 
+to do IO.
 -}
-ioButton :: String -> (AppState -> IO AppState) -> IORef AppState -> UI Element
+ioButton :: String -> (AppState -> UI AppState) -> IORef AppState -> UI Element
 ioButton desc f state = do
     b <- UI.button # set text desc
     on click b $ const $ do
         old <- liftIO $ readIORef state
-        new <- liftIO $ f old
+        new <- f old
         liftIO $ writeIORef state new
     return b
+
+makeDefaultPanel :: (IORef AppState)  -> String -> [(IORef AppState -> UI Element)] -> UI Element
+makeDefaultPanel state s items = do
+    p <- UI.div #. "panel"
+    heading <- UI.div # set text s #. "panel-heading"
+    contents <- UI.div #+ map ($ state) items
+    return p #+ [return heading, return contents #. "panel-contents"]
+    return p
+
+filterRow :: String -> (Comparison -> String -> AppState -> AppState) -> IORef AppState -> UI Element
+filterRow desc f state = do
+    compareToInput <- UI.input
+    
+    let makeButton comp tcomp = do
+        b <- UI.button # set text tcomp
+        on click b $ const $ do
+            old <- liftIO $ readIORef state
+            compareToValue <- compareToInput # get value
+            let new = f comp compareToValue old
+            liftIO $ writeIORef state new
+        return b
+    
+    ble <- makeButton LE "<"
+    bleq <- makeButton LEQ "<="
+    bq <- makeButton Equal "=="
+    bgeq <- makeButton GEQ ">="
+    bge <- makeButton GE ">"
+    
+    row 
+        [ string desc
+        , return ble, return bleq, return bq, return bgeq, return bge
+        , return compareToInput
+        ]
+
+addRemoveRow :: String -> (AddRemove -> Music -> Music) -> IORef AppState -> UI Element
+addRemoveRow obj f state = row
+    [ simpleButton ("add "++obj) (f Add) state
+    , simpleButton ("remove "++obj) (f Remove) state
+    ]

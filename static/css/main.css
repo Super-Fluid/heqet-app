@@ -13,9 +13,13 @@
 
 .panel {
     width: 300px;
-    margin: 1px;
-    padding: 1px;
+    border: 1px solid white;
+    padding: 0px;
     display: block;
+}
+
+.panel-heading {
+    min-height: 20px;
 }
 
 .musicspace {
@@ -46,3 +50,61 @@ body {
     display: none;
 }
 
+.color-darkgreen {
+    background-color: #008800;
+    color: white;
+}
+
+.color-brown {
+    background-color: #774400;
+    color: white;
+}
+
+.color-red {
+    background-color: #ff0000;
+    color: white;
+}
+
+.color-lightblue {
+    background-color: #88ccff;
+    color: black;
+}
+
+.color-darkblue {
+    background-color: #0000ff;
+    color: black;
+}
+
+.color-purple {
+    background-color: #8800cc;
+    color: white;
+}
+
+.color-yellow {
+    background-color: #ffff00;
+    color: black;
+}
+
+.color-orange {
+    background-color: #ff8800;
+    color: black;
+}
+
+.color-pink {
+    background-color: #ffaaaa;
+    color: black;
+}
+
+.color-grey {
+    background-color: #aaaaaa;
+    color: black;
+}
+
+#trim {
+    background-color: #aa0000;
+}
+
+#trim button {
+    
+    background-color: #ee2222;
+}

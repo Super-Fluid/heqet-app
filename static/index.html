@@ -21,14 +21,12 @@
     // appropriately. Wait until they exist
     // first.
     setTimeout(function(){
-        $(document).ready(function(){
             $(".panel-heading").on("click",function(e) {
                 $(this).parent().children(".panel-contents").toggleClass("hide");
             });
             $(".panel-contents").addClass("hide");
             resizeCanvas();
-        });
-    }, 500);
+    }, 2000);
     
     // resize the canvas when the window changes size
     $(window).resize(resizeCanvas);
