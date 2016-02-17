@@ -72,13 +72,6 @@ data HeadingSymbol' =
 type Symbol = (Symbol',StaffN,StaffPosition,PointInTime)
 type HeadingSymbol = (HeadingSymbol',StaffN)
 
-data ViewState = ViewState
-    { _startTime :: PointInTime
-    , _endTime :: PointInTime
-    , _topStaff :: StaffN
-    , _staffSize :: Int -- number of pixels between two staff lines
-    }
-
 exampleSymbols :: [Symbol]
 exampleSymbols =
     [ (NoteHead Whole,1,0,0)
@@ -101,5 +94,12 @@ exampleHeading =
     , (KeyH (-4), 1)
     , (TextMeterH "4/4",1)
     ]
+
+data ViewState = ViewState
+    { _startTime :: PointInTime
+    , _endTime :: PointInTime
+    , _topStaff :: StaffN
+    , _staffSize :: Int -- number of pixels between two staff lines
+    }
 
 makeLenses ''ViewState

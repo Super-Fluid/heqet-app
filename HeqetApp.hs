@@ -2,6 +2,7 @@ import Control.Monad
 
 import HeqetApp.Types
 import HeqetApp.Buttons
+import HeqetApp.Draw
 
 import qualified Graphics.UI.Threepenny as UI
 import Graphics.UI.Threepenny.Core
