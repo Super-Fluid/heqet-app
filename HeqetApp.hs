@@ -199,6 +199,7 @@ clef state = makeDefaultPanel state "Clef"
     , simpleButton "treble_8" id
     , simpleButton "tenor" id
     , simpleButton "bass" id
+    , const $ string "manual clefs are only apparent in transposed view!"
     ]
 
 view :: (IORef AppState) -> UI Element
