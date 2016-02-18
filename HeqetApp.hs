@@ -23,7 +23,11 @@ setup window = do
     canvas <- UI.canvas #. "musicspace"
     return canvasdiv #+ [return canvas]
     state <- liftIO $ newIORef (100,())
-    return paneldiv #+ [column $ map ($ state) HeqetApp.Interface.panels]
+    extraState <- liftIO $ newIORef () --- ARGH
+    return paneldiv #+ [column $
+        (HeqetApp.Interface.navbar extraState)
+        : map ($ state) HeqetApp.Interface.panels
+        ]
     getBody window #+ [row [return canvasdiv, return paneldiv]]
     UI.addStyleSheet window "main.css"
     

@@ -24,7 +24,7 @@ simpleButton desc f state = do
 A "total" button acts on all the music.
 For example, changing the selection. 
 -}
-totalButton :: String -> (AppState -> AppState) -> IORef AppState -> UI Element
+totalButton :: String -> (a -> a) -> IORef a -> UI Element
 totalButton desc f state = do
     b <- UI.button # set text desc
     on click b $ const $ do
@@ -45,7 +45,7 @@ uiSimpleButton desc f state = do
         liftIO $ writeIORef state (i,new)
     return b
 
-uiTotalButton :: String -> (AppState -> UI AppState) -> IORef AppState -> UI Element
+uiTotalButton :: String -> (a -> UI a) -> IORef a -> UI Element
 uiTotalButton desc f state = do
     b <- UI.button # set text desc
     on click b $ const $ do
@@ -59,7 +59,7 @@ An "IO" button (always total) can do is the
 same type as a UI button, but is allowed 
 to do IO.
 -}
-ioButton :: String -> (AppState -> UI AppState) -> IORef AppState -> UI Element
+ioButton :: String -> (a -> UI a) -> IORef a -> UI Element
 ioButton desc f state = do
     b <- UI.button # set text desc
     on click b $ const $ do
