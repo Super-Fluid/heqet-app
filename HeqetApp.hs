@@ -44,14 +44,11 @@ setup window = do
         , _staffSize = 5
         }
     
-    timer <- UI.timer # set UI.interval 50
+    timer <- UI.timer # set UI.interval 100
     redrawTick <- accumE (0::Int) $ (+1) <$ UI.tick timer
     onEvent redrawTick $ \stepNum -> do
         canvas # UI.clearCanvas
-        canvas # set' UI.fillStyle (UI.htmlColor "black")
-        (l,_) <- liftIO $ readIORef state
-        canvas # UI.fillRect (100,100) (fromIntegral l) 50
-        return $ HeqetApp.Draw.draw (return canvas) [] [] viewstate
+        canvas # HeqetApp.Draw.draw [] [] viewstate
 
     UI.start timer
     return ()

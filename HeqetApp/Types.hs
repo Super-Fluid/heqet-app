@@ -95,13 +95,15 @@ exampleHeading =
     , (TextMeterH "4/4",1)
     ]
 
+type PX = Double
+
 data ViewState = ViewState
     { _startTime :: PointInTime
     , _endTime :: PointInTime
-    , _timeScale :: Int -- number of pixels in 1 whole note of time
+    , _timeScale :: PX -- number of pixels in 1 whole note of time
     , _topStaff :: StaffN
     , _bottomStaff :: StaffN
-    , _staffSize :: Int -- number of pixels between two staff lines
+    , _staffSize :: PX -- number of pixels between two staff lines
     }
 
 makeLenses ''ViewState
