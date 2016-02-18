@@ -29,9 +29,9 @@ topStaffOffset = 15 :: Double
 
 draw :: [HeadingSymbol] -> [Symbol] -> ViewState -> Canvas -> UI ()
 draw hsyms syms viewstate canvas = do
-    canvas # dot 1 1 0 viewstate
+    canvas # dot 2 0 1 viewstate
     canvas # staffLines viewstate
-    return ()
+    mapM_ (\(s',sn,sp,pit) -> drawSymbol (placeAndScale sn sp pit viewstate) canvas s') syms
 
 calcX :: PointInTime -> ViewState -> PX
 calcX pit viewstate = let
@@ -88,3 +88,24 @@ line1 startX stopX canvas y = do
     canvas # moveTo (startX,y)
     canvas # lineTo (stopX,y)
     canvas # stroke
+
+{-
+The symbols are specified relative to their
+own origin. To draw a symbol, use placeAndScale
+to make a function that converts them to absolute
+coordinates, and pass it into the symbol-drawing
+function.
+-}
+placeAndScale :: StaffN -> StaffPosition -> PointInTime -> ViewState -> (Point -> Point)
+placeAndScale staffN staffPos pit viewstate (relX,relY) = let
+    originX = calcX pit viewstate
+    originY = calcY staffN staffPos viewstate
+    absX = relX * (viewstate^.staffSize) + originX
+    absY = relY * (viewstate^.staffSize) + originY
+    in (absX,absY)
+
+drawSymbol :: (Point -> Point) -> Canvas -> Symbol' -> UI ()
+drawSymbol f canvas s = return ()
+
+drawHeadingSymbol :: (Point -> Point) -> Canvas -> HeadingSymbol' -> UI ()
+drawHeadingSymbol f canvas hs = return ()
