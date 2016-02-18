@@ -48,7 +48,7 @@ setup window = do
     redrawTick <- accumE (0::Int) $ (+1) <$ UI.tick timer
     onEvent redrawTick $ \stepNum -> do
         canvas # UI.clearCanvas
-        canvas # HeqetApp.Draw.draw [] [] viewstate
+        canvas # HeqetApp.Draw.draw exampleHeading exampleSymbols viewstate
 
     UI.start timer
     return ()

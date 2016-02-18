@@ -31,7 +31,7 @@ draw :: [HeadingSymbol] -> [Symbol] -> ViewState -> Canvas -> UI ()
 draw hsyms syms viewstate canvas = do
     canvas # dot 2 0 1 viewstate
     canvas # staffLines viewstate
-    mapM_ (\(s',sn,sp,pit) -> drawSymbol (placeAndScale sn sp pit viewstate) canvas s') syms
+    mapM_ (\(s',sn,sp,pit) -> drawSymbol sp (placeAndScale sn sp pit viewstate) canvas s') syms
 
 calcX :: PointInTime -> ViewState -> PX
 calcX pit viewstate = let
@@ -104,8 +104,45 @@ placeAndScale staffN staffPos pit viewstate (relX,relY) = let
     absY = relY * (viewstate^.staffSize) + originY
     in (absX,absY)
 
-drawSymbol :: (Point -> Point) -> Canvas -> Symbol' -> UI ()
-drawSymbol f canvas s = return ()
+drawSymbol :: StaffPosition -> (Point -> Point) -> Canvas -> Symbol' -> UI ()
+drawSymbol _ f canvas (NoteHead X) = return ()
+drawSymbol _ f canvas (NoteHead Breve) = return ()
+drawSymbol _ f canvas (NoteHead Whole) = return ()
+drawSymbol _ f canvas (NoteHead Half) = return ()
+drawSymbol _ f canvas (NoteHead Filled) = return ()
+drawSymbol _ f canvas (Stem Up) = return ()
+drawSymbol _ f canvas (Stem Down) = return ()
+drawSymbol _ f canvas (Flags Up n) = return ()
+drawSymbol _ f canvas (Flags Down n) = return ()
+drawSymbol _ f canvas (Accidental DoubleFlat) = return ()
+drawSymbol _ f canvas (Accidental Flat) = return ()
+drawSymbol _ f canvas (Accidental Natural) = return ()
+drawSymbol _ f canvas (Accidental Sharp) = return ()
+drawSymbol _ f canvas (Accidental DoubleSharp) = return ()
+drawSymbol _ f canvas (SimpleArticulation updn Marcato) = return ()
+drawSymbol _ f canvas (SimpleArticulation updn Stopped) = return ()
+drawSymbol _ f canvas (SimpleArticulation updn Tenuto) = return ()
+drawSymbol _ f canvas (SimpleArticulation updn Staccatissimo) = return ()
+drawSymbol _ f canvas (SimpleArticulation updn Accent) = return ()
+drawSymbol _ f canvas (SimpleArticulation updn Staccato) = return ()
+drawSymbol _ f canvas (SimpleArticulation updn Portato) = return ()
+drawSymbol _ f canvas (Markup s) = return ()
+drawSymbol _ f canvas (TextDynamic s) = return ()
+drawSymbol _ f canvas (TextMeter s) = return ()
+drawSymbol _ f canvas (KeyChange n) = return ()
+drawSymbol _ f canvas (Barline) = return ()
+drawSymbol _ f canvas (Clef Treble) = return ()
+drawSymbol _ f canvas (Clef Alto) = return ()
+drawSymbol _ f canvas (Clef Treble8) = return ()
+drawSymbol _ f canvas (Clef Tenor) = return ()
+drawSymbol _ f canvas (Clef Bass) = return ()
+drawSymbol _ f canvas (Clef (CustomClef s)) = return ()
+drawSymbol _ f canvas (Rest) = return ()
+drawSymbol _ f canvas (Tie) = return ()
+drawSymbol _ f canvas (Slur updown) = return ()
+drawSymbol staffPos f canvas (LedgerLines) = return ()
+
+
 
 drawHeadingSymbol :: (Point -> Point) -> Canvas -> HeadingSymbol' -> UI ()
 drawHeadingSymbol f canvas hs = return ()
