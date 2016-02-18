@@ -44,7 +44,7 @@ setup window = do
         , _staffSize = 5
         }
     
-    timer <- UI.timer # set UI.interval 100
+    timer <- UI.timer # set UI.interval 250
     redrawTick <- accumE (0::Int) $ (+1) <$ UI.tick timer
     onEvent redrawTick $ \stepNum -> do
         canvas # UI.clearCanvas

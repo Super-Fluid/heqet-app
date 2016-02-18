@@ -30,6 +30,7 @@ topStaffOffset = 14 :: Double
 draw :: [HeadingSymbol] -> [Symbol] -> ViewState -> Canvas -> UI ()
 draw hsyms syms viewstate canvas = do
     canvas # dot 1 0 0 viewstate
+    canvas # staffLines viewstate
     return ()
 
 calcX :: PointInTime -> ViewState -> PX
@@ -65,4 +66,25 @@ dot staffN staffPos pit viewstate canvas = let
     in canvas # dot' (x,y)
 
 staffLines :: ViewState -> Canvas -> UI ()
-staffLines viewstate canvas = return ()
+staffLines viewstate canvas = do
+    let 
+        startX = calcX (viewstate^.startTime) viewstate
+        stopX = calcX (viewstate^.endTime) viewstate
+        staffNs = [(viewstate^.topStaff)..(viewstate^.bottomStaff)]
+        ys = map (\n -> calcY n 0 viewstate) staffNs
+    mapM_ (\y -> lines5 (viewstate^.staffSize) startX stopX y canvas) ys
+
+lines5 :: PX -> PX -> PX -> PX -> Canvas -> UI ()
+lines5 spacing startX stopX y canvas = do
+    let
+        diffs = [4,2,0,-2,-4]
+        pixelDiffs = map (*spacing) diffs
+        pixelAbs = map (+y) pixelDiffs
+    mapM_ (line1 startX stopX canvas) pixelAbs
+
+line1 :: PX -> PX -> Canvas -> PX -> UI ()
+line1 startX stopX canvas y = do
+    canvas # beginPath
+    canvas # moveTo (startX,y)
+    canvas # lineTo (stopX,y)
+    canvas # stroke
