@@ -101,7 +101,7 @@ placeAndScale staffN staffPos pit viewstate (relX,relY) = let
     originX = calcX pit viewstate
     originY = calcY staffN staffPos viewstate
     absX = relX * (viewstate^.staffSize) + originX
-    absY = relY * (viewstate^.staffSize) + originY
+    absY = (-relY) * (viewstate^.staffSize) + originY
     in (absX,absY)
 
 drawSymbol :: StaffPosition -> (Point -> Point) -> Canvas -> Symbol' -> UI ()
@@ -130,7 +130,14 @@ drawSymbol _ f canvas (Markup s) = return ()
 drawSymbol _ f canvas (TextDynamic s) = return ()
 drawSymbol _ f canvas (TextMeter s) = return ()
 drawSymbol _ f canvas (KeyChange n) = return ()
-drawSymbol _ f canvas (Barline) = return ()
+drawSymbol _ f canvas (Barline) = do
+    let 
+        bottom = f (0,-4)
+        top = f (0,4)
+    canvas # beginPath
+    canvas # moveTo bottom
+    canvas # lineTo top
+    canvas # stroke
 drawSymbol _ f canvas (Clef Treble) = return ()
 drawSymbol _ f canvas (Clef Alto) = return ()
 drawSymbol _ f canvas (Clef Treble8) = return ()

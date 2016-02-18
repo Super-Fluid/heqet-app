@@ -76,6 +76,7 @@ exampleSymbols :: [Symbol]
 exampleSymbols =
     [ (NoteHead Whole,1,0,0)
     , (NoteHead Whole,1,3,1)
+    , (Barline,1,0,2)
     , (NoteHead Whole,1,2,2)
     , (NoteHead Filled,1,(-1),3)
     , (NoteHead Filled,1,-3,13/4)
