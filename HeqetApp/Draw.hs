@@ -73,6 +73,10 @@ thinLine canvas = canvas # set' strokeStyle "black" >> canvas # set' lineWidth 1
 thickLine :: Canvas -> UI ()
 thickLine canvas = canvas # set' strokeStyle "black" >> canvas # set' lineWidth 2 >> return ()
 
+textFill :: Canvas -> UI ()
+textFill canvas = do
+    canvas # blackFill
+
 staffLines :: ViewState -> Canvas -> UI ()
 staffLines viewstate canvas = do
     let 
@@ -220,10 +224,23 @@ drawSymbol _ f sc canvas (SimpleArticulation updn Staccato) = do
     canvas # fill
 drawSymbol _ f _ canvas (SimpleArticulation updn Portato) =
     invertibleArticulation f canvas updn [[(0,0),(2,0)],[(0,0.5),(2,1.25),(0,2)]]
-drawSymbol _ f _ canvas (Markup s) = return ()
-drawSymbol _ f _ canvas (TextDynamic s) = return ()
-drawSymbol _ f _ canvas (TextMeter s) = return ()
-drawSymbol _ f _ canvas (KeyChange n) = return ()
+drawSymbol _ f _ canvas (Markup s) = do
+    canvas # textFill
+    canvas # fillText s (f(0,10))
+drawSymbol _ f _ canvas (TextDynamic s) = do
+    canvas # textFill
+    canvas # fillText s (f(0,-10))
+drawSymbol _ f _ canvas (TextMeter s) = do
+    canvas # textFill
+    canvas # fillText s (f(0,0))
+drawSymbol _ f _ canvas (KeyChange n) = do
+    canvas # textFill
+    let s = if n>0 
+        then show n ++ "#"
+        else if n<0 
+            then show n ++ "b"
+            else "0"
+    canvas # fillText s (f(0,4))
 drawSymbol _ f _ canvas (Barline) = do
     let 
         bottom = f (0,-4)
@@ -233,13 +250,47 @@ drawSymbol _ f _ canvas (Barline) = do
     canvas # moveTo bottom
     canvas # lineTo top
     canvas # stroke 
-drawSymbol _ f _ canvas (Clef Treble) = return ()
-drawSymbol _ f _ canvas (Clef Alto) = return ()
-drawSymbol _ f _ canvas (Clef Treble8) = return ()
-drawSymbol _ f _ canvas (Clef Tenor) = return ()
-drawSymbol _ f _ canvas (Clef Bass) = return ()
-drawSymbol _ f _ canvas (Clef (CustomClef s)) = return ()
-drawSymbol _ f sc canvas (Rest) = return ()
+drawSymbol _ f _ canvas (Clef Treble) = do
+    let
+        path = map f [(0,0),(-2,-2),(-4,0),(0,4),(-2,6),(-2,-4)]
+    canvas # thinLine
+    canvas # drawPath path
+drawSymbol _ f _ canvas (Clef Alto) = do
+    let
+        figure = (map.map) f [[(-3,-4),(-3,4)],[(-2,-4),(0,-2),(-2,0),(0,2),(-2,4)]]
+    canvas # thinLine
+    canvas # drawFigure figure
+drawSymbol _ f _ canvas (Clef Treble8) = do
+    let
+        figure = (map.map) f [[(0,0),(-2,-2),(-4,0),(0,4),(-2,6),(-2,-4)]]
+    canvas # thinLine
+    canvas # drawFigure figure
+    canvas # textFill
+    canvas # fillText "8" (f(-2,-6))
+drawSymbol _ f _ canvas (Clef Tenor) = do
+    -- note that Alto and Tenor clef are exactly the same here; all that changes is their position
+    let
+        figure = (map.map) f [[(-3,-4),(-3,4)],[(-2,-4),(0,-2),(-2,0),(0,2),(-2,4)]]
+    canvas # thinLine
+    canvas # drawFigure figure
+drawSymbol _ f _ canvas (Clef Bass) = do
+    let
+        path = map f [(-2,-5),(0,-1),(0,1),(-2,1.5)]
+    canvas # thinLine
+    canvas # drawPath path
+drawSymbol _ f _ canvas (Clef (CustomClef s)) = do
+    canvas # textFill
+    canvas # fillText s (f(-3,0))
+drawSymbol _ f sc canvas (Rest RBreve) = return ()
+drawSymbol _ f sc canvas (Rest R1) = return ()
+drawSymbol _ f sc canvas (Rest R2) = return ()
+drawSymbol _ f sc canvas (Rest R4) = return ()
+drawSymbol _ f sc canvas (Rest R8) = return ()
+drawSymbol _ f sc canvas (Rest R16) = return ()
+drawSymbol _ f sc canvas (Rest R32) = return ()
+drawSymbol _ f sc canvas (Rest R64) = return ()
+drawSymbol _ f sc canvas (Rest R128) = return ()
+drawSymbol _ f sc canvas (Dotting n) = return ()
 drawSymbol _ f _ canvas (Tie) = return ()
 drawSymbol _ f _ canvas (Slur updown) = return ()
 drawSymbol staffPos f sc canvas (LedgerLines) = return ()

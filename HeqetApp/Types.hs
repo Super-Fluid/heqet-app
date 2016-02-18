@@ -89,13 +89,14 @@ data Symbol' =
     | KeyChange Int
     | Barline
     | Clef Clef
-    | Rest
+    | Rest Rest
     | Tie
     | Slur UpDown
     | LedgerLines
     | InsertionPoint
     | Color Color
     | Selection
+    | Dotting NumFlags
 
 data HeadingSymbol' = 
     ClefH Clef
