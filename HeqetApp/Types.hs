@@ -2,6 +2,11 @@
 
 module HeqetApp.Types where
 
+import Graphics.UI.Threepenny.Canvas 
+    (FillStyle
+    ,htmlColor
+    )
+
 import Control.Lens
 
 type AppState = (Int,Music)
@@ -40,9 +45,37 @@ type TextDynamic = String
 type TextMeter = String
 
 data NoteHead = X | Breve | Whole | Half | Filled
+    deriving (Show,Eq,Read)
 type NumFlags = Int
 
 type StaffN = Int
+
+data Color = 
+    DarkGreen
+    | Brown
+    | DarkBlue
+    | Red
+    | LightBlue
+    | Purple
+    | Yellow
+    | Orange
+    | Pink
+    | Grey
+    deriving (Show,Eq,Read)
+
+colorTable :: [(Color,FillStyle)]
+colorTable = 
+    [ (DarkGreen, "")
+    , (Brown, "")
+    , (DarkBlue, "")
+    , (Red, "")
+    , (LightBlue, "")
+    , (Purple, "")
+    , (Yellow, "")
+    , (Orange, "")
+    , (Pink, "")
+    , (Grey, "")
+    ] & traverse._2 %~ htmlColor
 
 data Symbol' = 
     NoteHead NoteHead
@@ -60,6 +93,9 @@ data Symbol' =
     | Tie
     | Slur UpDown
     | LedgerLines
+    | InsertionPoint
+    | Color Color
+    | Selection
 
 data HeadingSymbol' = 
     ClefH Clef
