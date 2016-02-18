@@ -38,7 +38,9 @@ setup window = do
     let viewstate = ViewState {
           _startTime = 0
         , _endTime = 10
+        , _timeScale = 100
         , _topStaff = 1
+        , _bottomStaff = 4
         , _staffSize = 5
         }
     

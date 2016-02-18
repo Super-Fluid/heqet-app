@@ -98,7 +98,9 @@ exampleHeading =
 data ViewState = ViewState
     { _startTime :: PointInTime
     , _endTime :: PointInTime
+    , _timeScale :: Int -- number of pixels in 1 whole note of time
     , _topStaff :: StaffN
+    , _bottomStaff :: StaffN
     , _staffSize :: Int -- number of pixels between two staff lines
     }
 
