@@ -18,18 +18,18 @@ import Control.Lens hiding ((#),set')
 
 -- the header is the strip on the left of the canvas that
 -- gives the current clef, key, staff number, instrument.
-headerWidth = 150 :: PX
+headerWidth = 90 :: PX
 
 -- the number of staff units between each staff
-staffSpacing = 15 :: Double
+staffSpacing = 19 :: Double
 
 -- the number of staff units that the top
 -- staff is below the top of the canvas
-topStaffOffset = 14 :: Double
+topStaffOffset = 15 :: Double
 
 draw :: [HeadingSymbol] -> [Symbol] -> ViewState -> Canvas -> UI ()
 draw hsyms syms viewstate canvas = do
-    canvas # dot 1 0 0 viewstate
+    canvas # dot 1 1 0 viewstate
     canvas # staffLines viewstate
     return ()
 
