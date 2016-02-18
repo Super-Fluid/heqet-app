@@ -53,7 +53,6 @@ dot' :: (PX,PX) -> Canvas -> UI ()
 dot' point canvas = do
     canvas # beginPath
     canvas # arc point 2 0 7
-    canvas # closePath
     canvas # set' UI.fillStyle (UI.htmlColor "red")
     canvas # fill
     return ()
@@ -196,17 +195,31 @@ drawSymbol _ f _ canvas (Accidental Natural) = do
     canvas # drawFigure natural
 drawSymbol _ f _ canvas (Accidental Sharp) = do
     let
-        natural = (map.map) f [[(-2,1),(-2,-0.5),(-1,0.5)],[(-2,0.5),(-1,0.5),(-1,-1)]]
+        sharp = (map.map) f [[(-2,-1),(-2,1)],[(-1,-1),(-1,1)],[(-2.5,0.5),(-0.5,0.5)],[(-2.5,-0.5),(-0.5,-0.5)]]
     canvas # thinLine
-    canvas # drawFigure natural
-drawSymbol _ f _ canvas (Accidental DoubleSharp) = return ()
-drawSymbol _ f _ canvas (SimpleArticulation updn Marcato) = return ()
-drawSymbol _ f _ canvas (SimpleArticulation updn Stopped) = return ()
-drawSymbol _ f _ canvas (SimpleArticulation updn Tenuto) = return ()
-drawSymbol _ f _ canvas (SimpleArticulation updn Staccatissimo) = return ()
-drawSymbol _ f _ canvas (SimpleArticulation updn Accent) = return ()
-drawSymbol _ f _ canvas (SimpleArticulation updn Staccato) = return ()
-drawSymbol _ f _ canvas (SimpleArticulation updn Portato) = return ()
+    canvas # drawFigure sharp
+drawSymbol _ f _ canvas (Accidental DoubleSharp) = do
+    let
+        sharpsharp = (map.map) f [[(-2.5,-1),(-0.5,1)],[(-2.5,1),(-0.5,-1)]]
+    canvas # thinLine
+    canvas # drawFigure sharpsharp
+drawSymbol _ f _ canvas (SimpleArticulation updn Marcato) =
+    invertibleArticulation f canvas updn [[(0,0),(1,1),(2,0)]]
+drawSymbol _ f _ canvas (SimpleArticulation updn Stopped) = 
+    invertibleArticulation f canvas updn [[(0,0),(1,0),(1,1),(0,1),(0,0)]]
+drawSymbol _ f _ canvas (SimpleArticulation updn Tenuto) =
+    invertibleArticulation f canvas updn [[(0,0),(2,0)]]
+drawSymbol _ f _ canvas (SimpleArticulation updn Staccatissimo) =
+    invertibleArticulation f canvas updn [[(0,0),(0,2)]]
+drawSymbol _ f _ canvas (SimpleArticulation updn Accent) =
+    invertibleArticulation f canvas updn [[(0,0),(2,0.75),(0,1.5)]]
+drawSymbol _ f sc canvas (SimpleArticulation updn Staccato) = do
+    canvas # beginPath
+    canvas # arc (f(0,1)) (sc 1) 0 7
+    canvas # blackFill
+    canvas # fill
+drawSymbol _ f _ canvas (SimpleArticulation updn Portato) =
+    invertibleArticulation f canvas updn [[(0,0),(2,0)],[(0,0.5),(2,1.25),(0,2)]]
 drawSymbol _ f _ canvas (Markup s) = return ()
 drawSymbol _ f _ canvas (TextDynamic s) = return ()
 drawSymbol _ f _ canvas (TextMeter s) = return ()
@@ -234,6 +247,14 @@ drawSymbol _ f _ canvas (InsertionPoint) = return ()
 drawSymbol _ f sc canvas (Color clr) = return ()
 drawSymbol _ f sc canvas Selection = return ()
 
+invertibleArticulation :: (Point -> Point) -> Canvas -> UpDown -> [[Point]] -> UI()
+invertibleArticulation f canvas updn points = do
+    let
+        baseY = case updn of Up -> 8; Down -> -8
+        inverter = case updn of Up -> 1; Down -> -1
+        path = (map.map) (f.(\(x,y) -> (x,baseY+(y*inverter)))) points
+    canvas # thinLine
+    canvas # drawFigure path
 
 drawPath :: [Point] -> Canvas -> UI ()
 drawPath ps canvas = do
