@@ -195,6 +195,7 @@ select state = makeDefaultPanel state "Select"
     [ totalButton "all" id
     , totalButton "none" id
     , totalButton "invert" id
+    , const $ row [ string "insertion point:", UI.input ]
     , const $ string "refine selection by:"
     , filterRow "start time" (const $ const $ id)
     , filterRow "end time" (const $ const $ id)
