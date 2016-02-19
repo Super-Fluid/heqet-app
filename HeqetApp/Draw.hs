@@ -29,7 +29,6 @@ topStaffOffset = 15 :: Double
 
 draw :: [HeadingSymbol] -> [Symbol] -> ViewState -> Canvas -> UI ()
 draw hsyms syms viewstate canvas = do
-    canvas # dot 2 0 1 viewstate
     canvas # staffLines viewstate
     mapM_ (\(s',sn,sp,pit) -> drawSymbol sp (placeAndScale sn sp pit viewstate) (*(viewstate^.staffSize)) canvas s') syms
 
@@ -45,7 +44,7 @@ calcY staffN staffPos viewstate = let
     yStaffUnits = 
         (fromIntegral staffNFromTop) * staffSpacing
         + topStaffOffset
-        + (fromIntegral staffPos)
+        - (fromIntegral staffPos)
     in yStaffUnits * (viewstate^.staffSize)
 
 -- dot at a pixel position
@@ -71,7 +70,7 @@ thinLine :: Canvas -> UI ()
 thinLine canvas = canvas # set' strokeStyle "black" >> canvas # set' lineWidth 1 >> return ()
 
 thickLine :: Canvas -> UI ()
-thickLine canvas = canvas # set' strokeStyle "black" >> canvas # set' lineWidth 2 >> return ()
+thickLine canvas = canvas # set' strokeStyle "black" >> canvas # set' lineWidth 2.6 >> return ()
 
 textFill :: Canvas -> UI ()
 textFill canvas = do
@@ -144,17 +143,17 @@ drawSymbol _ f sc canvas (NoteHead Breve) = do
     canvas # drawFigure paths
 drawSymbol _ f sc canvas (NoteHead Whole) = do
     canvas # thinLine
-    let paths = (map.map) f [[(0,0),(1.5,1),(3,0),(1.5,-1)]]
+    let paths = (map.map) f [[(0,0),(1.5,1),(3,0),(1.5,-1),(0,0)]]
     canvas # drawFigure paths
 drawSymbol _ f sc canvas (NoteHead Half) = do
-    canvas # thickLine
-    canvas # beginPath
-    canvas # arc (f(0,1)) (sc 1) 0 7
-    canvas # stroke
+    canvas # thinLine
+    let paths = (map.map) f [[(0,0),(1,1),(2,0),(1,-1),(0,0)]]
+    canvas # drawFigure paths
 drawSymbol _ f sc canvas (NoteHead Filled) = do
     canvas # blackFill
     canvas # beginPath
-    canvas # arc (f(0,1)) (sc 1) 0 7
+    let points = map f [(0,0),(1,1),(2,0),(1,-1),(0,0)]
+    mapM_ (\p -> canvas # lineTo p) points
     canvas # fill
 drawSymbol _ f _ canvas (Stem Up) = do
     let
@@ -182,14 +181,14 @@ drawSymbol _ f _ canvas (Flags Down n) = do
             canvas # thickLine
             canvas # drawPath path
     mapM_ flag [0..(n-1)]
-drawSymbol _ f _ canvas (Accidental DoubleFlat) = do
-    let
-        flat = map f [(-2,1),(-2,-1),(-1,0),(-2,0)]
-    canvas # thinLine
-    canvas # drawPath flat
 drawSymbol _ f _ canvas (Accidental Flat) = do
     let
-        flatflat = map f [(-2,1),(-2,-1),(-1,0),(-2,0),(-3,1),(-3,-1),(-2,0),(-3,0)]
+        flat = map f [(-2,2),(-2,-1),(-1,0.6),(-2,0.6)]
+    canvas # thinLine
+    canvas # drawPath flat
+drawSymbol _ f _ canvas (Accidental DoubleFlat) = do
+    let
+        flatflat = map f [(-2,2),(-2,-1),(-1,0.6),(-2,0.6),(-3,0.6),(-3,2),(-3,-1),(-2,0.6),(-3,0.6)]
     canvas # thinLine
     canvas # drawPath flatflat
 drawSymbol _ f _ canvas (Accidental Natural) = do
@@ -199,7 +198,7 @@ drawSymbol _ f _ canvas (Accidental Natural) = do
     canvas # drawFigure natural
 drawSymbol _ f _ canvas (Accidental Sharp) = do
     let
-        sharp = (map.map) f [[(-2,-1),(-2,1)],[(-1,-1),(-1,1)],[(-2.5,0.5),(-0.5,0.5)],[(-2.5,-0.5),(-0.5,-0.5)]]
+        sharp = (map.map) f [[(-2,-2),(-2,1.8)],[(-1,-1.8),(-1,2)],[(-2.5,0.5),(-0.5,0.8)],[(-2.5,-0.8),(-0.5,-0.5)]]
     canvas # thinLine
     canvas # drawFigure sharp
 drawSymbol _ f _ canvas (Accidental DoubleSharp) = do
@@ -217,11 +216,8 @@ drawSymbol _ f _ canvas (SimpleArticulation updn Staccatissimo) =
     invertibleArticulation f canvas updn [[(0,0),(0,2)]]
 drawSymbol _ f _ canvas (SimpleArticulation updn Accent) =
     invertibleArticulation f canvas updn [[(0,0),(2,0.75),(0,1.5)]]
-drawSymbol _ f sc canvas (SimpleArticulation updn Staccato) = do
-    canvas # beginPath
-    canvas # arc (f(0,1)) (sc 1) 0 7
-    canvas # blackFill
-    canvas # fill
+drawSymbol _ f sc canvas (SimpleArticulation updn Staccato) =
+    invertibleArticulation f canvas updn [[(1,0),(1,0.5)]]
 drawSymbol _ f _ canvas (SimpleArticulation updn Portato) =
     invertibleArticulation f canvas updn [[(0,0),(2,0)],[(0,0.5),(2,1.25),(0,2)]]
 drawSymbol _ f _ canvas (Markup s) = do
