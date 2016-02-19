@@ -5,6 +5,7 @@ module HeqetApp.Interface
 
 import HeqetApp.Types
 import HeqetApp.Buttons
+import qualified HeqetApp.Interface.Navbar as Nav
 
 import qualified Graphics.UI.Threepenny as UI
 import Graphics.UI.Threepenny.Core
@@ -12,18 +13,18 @@ import Graphics.UI.Threepenny.Attributes
 import Graphics.UI.Threepenny.Events
 import Data.IORef
 
-navbar :: IORef () -> UI Element
+navbar :: IORef ViewState -> UI Element
 navbar state = row
-    [ totalButton "|<" id state
-    , totalButton "<" id state
-    , totalButton ">" id state
-    , totalButton ">|" id state
-    , totalButton "^" id state
-    , totalButton "v" id state
-    , totalButton "<->" id state
-    , totalButton ">-<" id state
-    , totalButton "+" id state
-    , totalButton "-" id state
+    [ totalButton "|<"  (Nav.toStart    ) state
+    , totalButton "<"   (Nav.backward   ) state
+    , totalButton ">"   (Nav.forward    ) state
+    , totalButton ">|"  (Nav.toEnd      ) state
+    , totalButton "^"   (Nav.up         ) state
+    , totalButton "v"   (Nav.down       ) state
+    , totalButton "<->" (Nav.stretch    ) state
+    , totalButton ">-<" (Nav.squeeze    ) state
+    , totalButton "+"   (Nav.larger     ) state
+    , totalButton "-"   (Nav.smaller    ) state
     ]
 
 panels :: [(IORef AppState -> UI Element)]

@@ -23,15 +23,8 @@ setup window = do
     canvas <- UI.canvas #. "musicspace"
     return canvasdiv #+ [return canvas]
     state <- liftIO $ newIORef (100,())
-    extraState <- liftIO $ newIORef () --- ARGH
-    return paneldiv #+ [column $
-        (HeqetApp.Interface.navbar extraState)
-        : map ($ state) HeqetApp.Interface.panels
-        ]
-    getBody window #+ [row [return canvasdiv, return paneldiv]]
-    UI.addStyleSheet window "main.css"
     
-    let viewstate = ViewState {
+    let defaultViewState = ViewState {
           _startTime = 0
         , _endTime = 10
         , _timeScale = 100
@@ -39,11 +32,19 @@ setup window = do
         , _bottomStaff = 4
         , _staffSize = 5
         }
+        
+    viewStateRef <- liftIO $ newIORef defaultViewState
+    return paneldiv #+ [column $
+        (HeqetApp.Interface.navbar viewStateRef)
+        : map ($ state) HeqetApp.Interface.panels
+        ]
+    getBody window #+ [row [return canvasdiv, return paneldiv]]
+    UI.addStyleSheet window "main.css"
     
     on mousedown canvas $ \e -> do
         old <- liftIO $ readIORef state
         liftIO $ writeIORef state (100,())
-        
+        viewstate <- liftIO $ readIORef viewStateRef
         canvas # UI.clearCanvas
         canvas # HeqetApp.Draw.draw exampleHeading exampleSymbols viewstate
     {-
