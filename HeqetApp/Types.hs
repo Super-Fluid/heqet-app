@@ -118,7 +118,7 @@ exampleSymbols =
     , (NoteHead Filled,1,-5,15/4)
     , (Stem Down,1,-5,15/4)
     , (Flags Down 1, 1,-5,15/4)
-    , (NoteHead Filled,1,4,4)
+    , (NoteHead X,1,4,4)
     , (Flags Down 3,1,4,4)
     , (Stem Down,1,4,4)
     , (Accidental Sharp,1,4,4)
