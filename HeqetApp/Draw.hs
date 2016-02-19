@@ -32,6 +32,7 @@ draw :: [HeadingSymbol] -> [Symbol] -> ViewState -> Canvas -> UI ()
 draw hsyms syms viewstate canvas = do
     canvas # staffLines viewstate
     mapM_ (\(s',sn,sp,pit) -> drawSymbol sp (placeAndScale sn sp pit viewstate) (*(viewstate^.staffSize)) canvas s') syms
+    mapM_ (\(hs',sn) -> drawHeadingSymbol 0 (placeAndScaleH sn viewstate) (*(viewstate^.staffSize)) canvas hs') hsyms
 
 calcX :: PointInTime -> ViewState -> PX
 calcX pit viewstate = let
@@ -141,6 +142,14 @@ placeAndScale staffN staffPos pit viewstate (relX,relY) = let
     originX = calcX pit viewstate
     originY = calcY staffN staffPos viewstate
     absX = relX * (viewstate^.staffSize) + originX
+    absY = (-relY) * (viewstate^.staffSize) + originY
+    in (absX,absY)
+
+placeAndScaleH :: StaffN -> ViewState -> (Point -> Point)
+placeAndScaleH staffN viewstate (relX,relY) = let
+    originX = calcX 0 viewstate
+    originY = calcY staffN 0 viewstate
+    absX = relX * (viewstate^.staffSize) + originX - 30
     absY = (-relY) * (viewstate^.staffSize) + originY
     in (absX,absY)
 
@@ -263,7 +272,7 @@ drawSymbol _ f _ canvas (KeyChange n) = do
     let s = if n>0 
         then show n ++ "#"
         else if n<0 
-            then show n ++ "b"
+            then show (-n) ++ "b"
             else "0"
     canvas # fillText s (f(0,4))
 drawSymbol _ f _ canvas (Barline) = do
@@ -277,7 +286,8 @@ drawSymbol _ f _ canvas (Barline) = do
     canvas # stroke 
 drawSymbol _ f _ canvas (Clef Treble) = do
     let
-        path = map f [(0,0),(-2,-2),(-4,0),(0,4),(-2,6),(-2,-4)]
+        points = [(0,0),(-2,-2),(-4,0),(0,4),(-2,6),(-2,-4)] :: [Point]
+        path = map f (points & traverse._2 %~ (subtract 2))
     canvas # thinLine
     canvas # drawPath path
 drawSymbol _ f _ canvas (Clef Alto) = do
@@ -287,20 +297,22 @@ drawSymbol _ f _ canvas (Clef Alto) = do
     canvas # drawFigure figure
 drawSymbol _ f _ canvas (Clef Treble8) = do
     let
-        figure = (map.map) f [[(0,0),(-2,-2),(-4,0),(0,4),(-2,6),(-2,-4)]]
+        points = [[(0,0),(-2,-2),(-4,0),(0,4),(-2,6),(-2,-4)]]  :: [[Point]]
+        figure = (map.map) f (points & traverse.traverse._2 %~ (subtract 2))
     canvas # thinLine
     canvas # drawFigure figure
     canvas # textFill
     canvas # fillText "8" (f(-2,-6))
 drawSymbol _ f _ canvas (Clef Tenor) = do
-    -- note that Alto and Tenor clef are exactly the same here; all that changes is their position
     let
-        figure = (map.map) f [[(-3,-4),(-3,4)],[(-2,-4),(0,-2),(-2,0),(0,2),(-2,4)]]
+        points = [[(-3,-4),(-3,4)],[(-2,-4),(0,-2),(-2,0),(0,2),(-2,4)]] :: [[Point]]
+        figure = (map.map) f (points & traverse.traverse._2 %~ (+2))
     canvas # thinLine
     canvas # drawFigure figure
 drawSymbol _ f _ canvas (Clef Bass) = do
     let
-        path = map f [(-2,-5),(0,-1),(0,1),(-2,1.5)]
+        points = [(-2,-5),(0,-1),(0,1),(-2,1.5)] :: [Point]
+        path = map f (points & traverse._2 %~ (+2))
     canvas # thinLine
     canvas # drawPath path
 drawSymbol _ f _ canvas (Clef (CustomClef s)) = do
@@ -405,5 +417,10 @@ drawPath ps canvas = do
 drawFigure :: [[Point]] -> Canvas -> UI ()
 drawFigure pss canvas = mapM_ (\ps -> drawPath ps canvas) pss
 
-drawHeadingSymbol :: (Point -> Point) -> Canvas -> HeadingSymbol' -> UI ()
-drawHeadingSymbol f canvas hs = return ()
+drawHeadingSymbol :: StaffPosition -> (Point -> Point) -> (PX -> PX) -> Canvas -> HeadingSymbol' -> UI ()
+drawHeadingSymbol pos f sc canvas (ClefH c) = drawSymbol pos f sc canvas (Clef c)
+drawHeadingSymbol pos f sc canvas (KeyH n) = drawSymbol pos f sc canvas (KeyChange n)
+drawHeadingSymbol _ f _ canvas (TextMeterH s) = return ()
+drawHeadingSymbol _ f _ canvas (TopStaffBracket) = return ()
+drawHeadingSymbol _ f _ canvas (BottomStaffBracket) = return ()
+drawHeadingSymbol _ f _ canvas (InstName s) = return ()

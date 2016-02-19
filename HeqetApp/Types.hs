@@ -163,7 +163,11 @@ exampleSymbols =
 exampleHeading :: [HeadingSymbol]
 exampleHeading =
     [ (ClefH Treble,1)
+    , (ClefH Bass,4)
+    , (ClefH Alto,3)
+    , (ClefH Treble8,2)
     , (KeyH (-4), 1)
+    , (KeyH (3), 2)
     , (TextMeterH "4/4",1)
     ]
 
