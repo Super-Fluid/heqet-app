@@ -65,7 +65,7 @@ file state = makeDefaultPanel state "File"
     , ioButton "Save" return
     , ioButton "Embed" return
     , const $ lypath
-    , ioButton "Render Lilypond" return
+    , ioButton "Export Lilypond code" return
     ]
     where 
         heqetpath = UI.input

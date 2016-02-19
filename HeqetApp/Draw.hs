@@ -31,7 +31,8 @@ topStaffOffset = 15 :: Double
 draw :: [HeadingSymbol] -> [Symbol] -> ViewState -> Canvas -> UI ()
 draw hsyms syms viewstate canvas = do
     canvas # staffLines viewstate
-    mapM_ (\(s',sn,sp,pit) -> drawSymbol sp (placeAndScale sn sp pit viewstate) (*(viewstate^.staffSize)) canvas s') syms
+    let visibleSyms = filter (\(_,sn,sp,pit) -> pit >= viewstate^.startTime && pit <= viewstate^.endTime && sn >= viewstate^.topStaff && sn <= viewstate^.bottomStaff) syms
+    mapM_ (\(s',sn,sp,pit) -> drawSymbol sp (placeAndScale sn sp pit viewstate) (*(viewstate^.staffSize)) canvas s') visibleSyms
     mapM_ (\(hs',sn) -> drawHeadingSymbol 0 (placeAndScaleH sn viewstate) (*(viewstate^.staffSize)) canvas hs') hsyms
 
 calcX :: PointInTime -> ViewState -> PX
@@ -147,7 +148,7 @@ placeAndScale staffN staffPos pit viewstate (relX,relY) = let
 
 placeAndScaleH :: StaffN -> ViewState -> (Point -> Point)
 placeAndScaleH staffN viewstate (relX,relY) = let
-    originX = calcX 0 viewstate
+    originX = calcX (viewstate^.startTime) viewstate
     originY = calcY staffN 0 viewstate
     absX = relX * (viewstate^.staffSize) + originX - 30
     absY = (-relY) * (viewstate^.staffSize) + originY
