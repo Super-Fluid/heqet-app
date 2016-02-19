@@ -94,16 +94,16 @@ colorTable =
 
 colorCoordinates :: [(HeqetApp.Types.Color,[Point])]
 colorCoordinates = 
-    [ (DarkGreen, [(-1,-1),(0,-2)])
-    , (Brown, [(-1,-0),(-1,1)])
-    , (DarkBlue, [(3,-1),(2,-2)])
-    , (Red, [(-1,0),(-1,-1)])
-    , (LightBlue, [(-1,1),(0,2)])
-    , (Purple, [(3,0),(3,1)])
-    , (Yellow, [(3,0),(3,-1)])
-    , (Orange, [(0,2),(1,2)])
-    , (Pink, [(2,2),(3,1)])
-    , (Grey, [(1,-2),(2,-2)])
+    [ (DarkGreen, [(-2,-1.5),(-0.5,-3)])
+    , (Brown, [(-2,0),(-2,1.5)])
+    , (DarkBlue, [(4,-1.5),(2.5,-3)])
+    , (Red, [(-2,0),(-2,-1.5)])
+    , (LightBlue, [(-2,1.5),(-0.5,3)])
+    , (Purple, [(4,0),(4,1.5)])
+    , (Yellow, [(4,0),(4,-1.5)])
+    , (Orange, [(1,3),(-0.5,3)])
+    , (Pink, [(4,1.5),(2.5,3)])
+    , (Grey, [(1,-3),(2.5,-3)])
     ] & traverse._2 %~ (\[a,b] -> [(1,0),a,b,(1,0)])
 
 staffLines :: ViewState -> Canvas -> UI ()
