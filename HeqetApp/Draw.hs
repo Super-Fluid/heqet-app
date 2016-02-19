@@ -277,15 +277,44 @@ drawSymbol _ f _ canvas (Clef Bass) = do
 drawSymbol _ f _ canvas (Clef (CustomClef s)) = do
     canvas # textFill
     canvas # fillText s (f(-3,0))
-drawSymbol _ f sc canvas (Rest RBreve) = return ()
-drawSymbol _ f sc canvas (Rest R1) = return ()
-drawSymbol _ f sc canvas (Rest R2) = return ()
-drawSymbol _ f sc canvas (Rest R4) = return ()
-drawSymbol _ f sc canvas (Rest R8) = return ()
-drawSymbol _ f sc canvas (Rest R16) = return ()
-drawSymbol _ f sc canvas (Rest R32) = return ()
-drawSymbol _ f sc canvas (Rest R64) = return ()
-drawSymbol _ f sc canvas (Rest R128) = return ()
+drawSymbol _ f sc canvas (Rest RBreve) = do
+    canvas # blackFill
+    canvas # beginPath
+    let points = map f [(0,0),(1,0),(1,2),(0,2),(0,0)]
+    mapM_ (\p -> canvas # lineTo p) points
+    canvas # fill
+drawSymbol _ f sc canvas (Rest R1) = do
+    canvas # blackFill
+    canvas # beginPath
+    let points = map f [(0,1),(2,1),(2,2),(0,2),(0,1)]
+    mapM_ (\p -> canvas # lineTo p) points
+    canvas # fill
+drawSymbol _ f sc canvas (Rest R2) = do
+    canvas # blackFill
+    canvas # beginPath
+    let points = map f [(0,0),(2,0),(2,1),(0,1),(0,0)]
+    mapM_ (\p -> canvas # lineTo p) points
+    canvas # fill
+drawSymbol _ f sc canvas (Rest R4) = do
+    let
+        path = map f [(0,3),(1,2),(0,1),(1,0),(0,-1),(1,-2)]
+    canvas # thinLine
+    canvas # drawPath path
+drawSymbol _ f sc canvas (Rest R8) = do
+    restStem f canvas 1
+    restFlags f canvas 1
+drawSymbol _ f sc canvas (Rest R16) = do
+    restStem f canvas 2
+    restFlags f canvas 2
+drawSymbol _ f sc canvas (Rest R32) = do
+    restStem f canvas 3
+    restFlags f canvas 3
+drawSymbol _ f sc canvas (Rest R64) = do
+    restStem f canvas 4
+    restFlags f canvas 4
+drawSymbol _ f sc canvas (Rest R128) = do
+    restStem f canvas 5
+    restFlags f canvas 5
 drawSymbol _ f sc canvas (Dotting n) = return ()
 drawSymbol _ f _ canvas (Tie) = return ()
 drawSymbol _ f _ canvas (Slur updown) = return ()
@@ -293,6 +322,23 @@ drawSymbol staffPos f sc canvas (LedgerLines) = return ()
 drawSymbol _ f _ canvas (InsertionPoint) = return ()
 drawSymbol _ f sc canvas (Color clr) = return ()
 drawSymbol _ f sc canvas Selection = return ()
+drawSymbol _ f sc canvas (TextArticulation s) = return ()
+
+restStem :: (Point -> Point) -> Canvas -> NumFlags -> UI()
+restStem f canvas n = do
+    let 
+        path = map f [(1,(fromIntegral n)+1),(1,-1)]
+    canvas # thinLine
+    canvas # drawPath path
+
+restFlags :: (Point -> Point) -> Canvas -> NumFlags -> UI()
+restFlags f canvas n = do
+    let
+        points = [(1,1),(0,0.5),(0,0)]
+        shiftBy y ps = ps & traverse._2 %~ (+(fromIntegral y))
+        paths = map (\y -> shiftBy y points) [1..n]
+    canvas # thinLine
+    canvas # drawFigure paths
 
 invertibleArticulation :: (Point -> Point) -> Canvas -> UpDown -> [[Point]] -> UI()
 invertibleArticulation f canvas updn points = do

@@ -45,6 +45,7 @@ data Rest = RBreve | R1 | R2 | R4 | R8 | R16 | R32 | R64 | R128
 
 type TextDynamic = String
 type TextMeter = String
+type TextArticulation = String
 
 data NoteHead = X | Breve | Whole | Half | Filled
     deriving (Show,Eq,Read)
@@ -99,6 +100,7 @@ data Symbol' =
     | Color Color
     | Selection
     | Dotting NumFlags
+    | TextArticulation TextArticulation
     deriving (Eq,Show,Read)
 
 data HeadingSymbol' = 
@@ -140,6 +142,15 @@ exampleSymbols =
     , (NoteHead Breve,2,3,3/2)
     , (SimpleArticulation Up Staccato,2,3,3/2)
     , (Accidental DoubleFlat,2,3,3/2)
+    , (Rest RBreve,3,0,1)
+    , (Rest R1,3,0,3/2)
+    , (Rest R2,3,0,2)
+    , (Rest R4,3,0,3)
+    , (Rest R8,3,0,4)
+    , (Rest R16,3,0,17/4)
+    , (Rest R32,3,0,18/4)
+    , (Rest R64,3,0,19/4)
+    , (Rest R128,3,0,5)
     ]
 
 exampleHeading :: [HeadingSymbol]
