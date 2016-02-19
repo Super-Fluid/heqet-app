@@ -65,7 +65,7 @@ dot staffN staffPos pit viewstate canvas = let
     in canvas # dot' (x,y)
 
 blackFill :: Canvas -> UI ()
-blackFill canvas = canvas # set' UI.fillStyle (UI.htmlColor "red")
+blackFill canvas = canvas # set' UI.fillStyle (UI.htmlColor "black")
 
 thinLine :: Canvas -> UI ()
 thinLine canvas = canvas # set' strokeStyle "black" >> canvas # set' lineWidth 1 >> return ()
@@ -310,7 +310,7 @@ invertibleArticulation f canvas updn points = do
 drawPath :: [Point] -> Canvas -> UI ()
 drawPath ps canvas = do
     canvas # beginPath
-    mapM_ (\p -> canvas # moveTo p) ps
+    mapM_ (\p -> canvas # lineTo p) ps
     canvas # stroke
 
 drawFigure :: [[Point]] -> Canvas -> UI ()
