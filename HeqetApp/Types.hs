@@ -66,20 +66,6 @@ data Color =
     | Grey
     deriving (Show,Eq,Read)
 
-colorTable :: [(Color,FillStyle)]
-colorTable = 
-    [ (DarkGreen, "")
-    , (Brown, "")
-    , (DarkBlue, "")
-    , (Red, "")
-    , (LightBlue, "")
-    , (Purple, "")
-    , (Yellow, "")
-    , (Orange, "")
-    , (Pink, "")
-    , (Grey, "")
-    ] & traverse._2 %~ htmlColor
-
 data Symbol' = 
     NoteHead NoteHead
     | Stem UpDown
@@ -119,7 +105,7 @@ exampleSymbols :: [Symbol]
 exampleSymbols =
     [ (NoteHead Whole,1,0,0)
     , (NoteHead Whole,1,3,1)
-    , (Barline,1,0,2)
+    , (Barline,1,0,5)
     , (NoteHead Whole,1,2,2)
     , (NoteHead Filled,1,(-1),3)
     , (Stem Down,1,(-1),3)
@@ -128,8 +114,10 @@ exampleSymbols =
     , (Accidental DoubleSharp,1,-3,13/4)
     , (NoteHead Filled,1,-2,14/4)
     , (Stem Down,1,-2,14/4)
+    , (Flags Down 1,1,-2,14/4)
     , (NoteHead Filled,1,-5,15/4)
     , (Stem Down,1,-5,15/4)
+    , (Flags Down 1, 1,-5,15/4)
     , (NoteHead Filled,1,4,4)
     , (Flags Down 3,1,4,4)
     , (Stem Down,1,4,4)
@@ -151,6 +139,25 @@ exampleSymbols =
     , (Rest R32,3,0,18/4)
     , (Rest R64,3,0,19/4)
     , (Rest R128,3,0,5)
+    , (Color Red,4,0,1)
+    , (Color Red,4,2,2)
+    , (Color Red,4,4,3)
+    , (Color Red,4,9,5)
+    , (Color DarkGreen,4,4,3)
+    , (NoteHead Whole,4,0,1)
+    , (NoteHead Whole,4,2,2)
+    , (NoteHead Whole,4,4,3)
+    , (NoteHead Whole,4,9,5)
+    , (LedgerLines,4,9,5)
+    , (Color Red,4,-9,6)
+    , (NoteHead Half,4,-9,6)
+    , (Stem Up,4,-9,6)
+    , (LedgerLines,4,-9,6)
+    , (Color Red,4,-10,13/2)
+    , (NoteHead Half,4,-10,13/2)
+    , (Stem Up,4,-10,13/2)
+    , (LedgerLines,4,-10,13/2)
+    , (Accidental Natural,4,-10,13/2)
     ]
 
 exampleHeading :: [HeadingSymbol]

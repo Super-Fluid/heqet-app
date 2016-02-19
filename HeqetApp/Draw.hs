@@ -15,6 +15,7 @@ import Graphics.UI.Threepenny.Core
 import Graphics.UI.Threepenny.Attributes
 import Graphics.UI.Threepenny.Canvas
 import Control.Lens hiding ((#),set')
+import Data.Maybe
 
 -- the header is the strip on the left of the canvas that
 -- gives the current clef, key, staff number, instrument.
@@ -75,6 +76,34 @@ thickLine canvas = canvas # set' strokeStyle "black" >> canvas # set' lineWidth 
 textFill :: Canvas -> UI ()
 textFill canvas = do
     canvas # blackFill
+
+colorTable :: [(HeqetApp.Types.Color,FillStyle)]
+colorTable = 
+    [ (DarkGreen, "#008800")
+    , (Brown, "#774400")
+    , (DarkBlue, "#0000ff")
+    , (Red, "#ff0000")
+    , (LightBlue, "#88ccff")
+    , (Purple, "#8800cc")
+    , (Yellow, "#ffff00")
+    , (Orange, "#ff8800")
+    , (Pink, "#ffaaaa")
+    , (Grey, "#aaaaaa")
+    ] & traverse._2 %~ htmlColor
+
+colorCoordinates :: [(HeqetApp.Types.Color,[Point])]
+colorCoordinates = 
+    [ (DarkGreen, [(-1,-1),(0,-2)])
+    , (Brown, [(-1,-0),(-1,1)])
+    , (DarkBlue, [(3,-1),(2,-2)])
+    , (Red, [(-1,0),(-1,-1)])
+    , (LightBlue, [(-1,1),(0,2)])
+    , (Purple, [(3,0),(3,1)])
+    , (Yellow, [(3,0),(3,-1)])
+    , (Orange, [(0,2),(1,2)])
+    , (Pink, [(2,2),(3,1)])
+    , (Grey, [(1,-2),(2,-2)])
+    ] & traverse._2 %~ (\[a,b] -> [(1,0),a,b,(1,0)])
 
 staffLines :: ViewState -> Canvas -> UI ()
 staffLines viewstate canvas = do
@@ -193,7 +222,7 @@ drawSymbol _ f _ canvas (Accidental DoubleFlat) = do
     canvas # drawPath flatflat
 drawSymbol _ f _ canvas (Accidental Natural) = do
     let
-        natural = (map.map) f [[(-2,1),(-2,-0.5),(-1,0.5)],[(-2,0.5),(-1,0.5),(-1,-1)]]
+        natural = (map.map) f [[(-2,2),(-2,-0.5),(-1,-0.5)],[(-2,0.5),(-1,0.5),(-1,-2)]]
     canvas # thinLine
     canvas # drawFigure natural
 drawSymbol _ f _ canvas (Accidental Sharp) = do
@@ -318,11 +347,29 @@ drawSymbol _ f sc canvas (Rest R128) = do
 drawSymbol _ f sc canvas (Dotting n) = return ()
 drawSymbol _ f _ canvas (Tie) = return ()
 drawSymbol _ f _ canvas (Slur updown) = return ()
-drawSymbol staffPos f sc canvas (LedgerLines) = return ()
+drawSymbol staffPos f sc canvas (LedgerLines) = do
+    let
+        extra1 = if (staffPos `mod` 2 /= 0) then 1 else 0
+        ys = if staffPos <= -6
+             then map (+extra1) [0,2..(-6-staffPos)]
+             else if staffPos >= 6
+                  then map (subtract extra1) [0,-2..(6-staffPos)]
+                  else []
+    canvas # thinLine
+    mapM_ (ledgerLine f canvas) ys
 drawSymbol _ f _ canvas (InsertionPoint) = return ()
-drawSymbol _ f sc canvas (Color clr) = return ()
+drawSymbol _ f sc canvas (Color clr) = do
+    let fillstyle = fromJust $ lookup clr colorTable
+    canvas # set' UI.fillStyle fillstyle
+    canvas # beginPath
+    let points = fromJust $ lookup clr colorCoordinates
+    mapM_ (\p -> canvas # lineTo p) (map f points)
+    canvas # fill
 drawSymbol _ f sc canvas Selection = return ()
 drawSymbol _ f sc canvas (TextArticulation s) = return ()
+
+ledgerLine :: (Point -> Point) -> Canvas -> Int -> UI()
+ledgerLine f canvas y = canvas # drawPath (map f [(-0.5,(fromIntegral y)),(3,(fromIntegral y))])
 
 restStem :: (Point -> Point) -> Canvas -> NumFlags -> UI()
 restStem f canvas n = do
@@ -334,9 +381,9 @@ restStem f canvas n = do
 restFlags :: (Point -> Point) -> Canvas -> NumFlags -> UI()
 restFlags f canvas n = do
     let
-        points = [(1,1),(0,0.5),(0,0)]
+        points = [(1,0),(0,0.5),(0,0)]
         shiftBy y ps = ps & traverse._2 %~ (+(fromIntegral y))
-        paths = map (\y -> shiftBy y points) [1..n]
+        paths = (map.map) f $ map (\y -> shiftBy y points) [1..n]
     canvas # thinLine
     canvas # drawFigure paths
 

@@ -31,10 +31,6 @@ setup window = do
     getBody window #+ [row [return canvasdiv, return paneldiv]]
     UI.addStyleSheet window "main.css"
     
-    on mousedown canvas $ \e -> do
-        old <- liftIO $ readIORef state
-        liftIO $ writeIORef state (100,())
-    
     let viewstate = ViewState {
           _startTime = 0
         , _endTime = 10
@@ -44,11 +40,16 @@ setup window = do
         , _staffSize = 5
         }
     
+    on mousedown canvas $ \e -> do
+        old <- liftIO $ readIORef state
+        liftIO $ writeIORef state (100,())
+        
+        canvas # UI.clearCanvas
+        canvas # HeqetApp.Draw.draw exampleHeading exampleSymbols viewstate
+    {-
     timer <- UI.timer # set UI.interval 250
     redrawTick <- accumE (0::Int) $ (+1) <$ UI.tick timer
     onEvent redrawTick $ \stepNum -> do
-        canvas # UI.clearCanvas
-        canvas # HeqetApp.Draw.draw exampleHeading exampleSymbols viewstate
-
     UI.start timer
+    -}
     return ()
