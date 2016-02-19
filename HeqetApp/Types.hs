@@ -167,6 +167,23 @@ exampleSymbols =
     , (Stem Up,4,-10,13/2)
     , (LedgerLines,4,-10,13/2)
     , (Accidental Natural,4,-10,13/2)
+    , (NoteHead Filled,2,0,8)
+    , (NoteHead Filled,2,0,9)
+    , (NoteHead Filled,2,0,10)
+    , (NoteHead Filled,2,0,11)
+    , (NoteHead Filled,2,0,12)
+    , (NoteHead Filled,2,0,13)
+    , (NoteHead Filled,2,0,14)
+    , (Stem Down,2,0,8)
+    , (Stem Down,2,0,9)
+    , (Stem Down,2,0,10)
+    , (Stem Down,2,0,11)
+    , (Stem Down,2,0,12)
+    , (Stem Down,2,0,13)
+    , (Stem Down,2,0,14)
+    , (Selection,2,0,11)
+    , (Selection,2,0,9)
+    , (Selection,2,0,12)
     ]
 
 exampleHeading :: [HeadingSymbol]

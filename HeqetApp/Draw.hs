@@ -311,7 +311,7 @@ drawSymbol _ f _ canvas (Clef Tenor) = do
     canvas # drawFigure figure
 drawSymbol _ f _ canvas (Clef Bass) = do
     let
-        points = [(-2,-5),(0,-1),(0,1),(-2,1.5)] :: [Point]
+        points = [(-2,-5),(0,-1),(0,1),(-2,1.5),(-2,-1)] :: [Point]
         path = map f (points & traverse._2 %~ (+2))
     canvas # thinLine
     canvas # drawPath path
@@ -377,7 +377,11 @@ drawSymbol _ f sc canvas (Color clr) = do
     let points = fromJust $ lookup clr colorCoordinates
     mapM_ (\p -> canvas # lineTo p) (map f points)
     canvas # fill
-drawSymbol _ f sc canvas Selection = return ()
+drawSymbol _ f sc canvas Selection = do
+    canvas # set' strokeStyle "#0f0"
+    canvas # set' lineWidth 3
+    let path = (map.map) f [[(-1,-1),(0,-2),(2,-2),(3,-1),(3,1),(2,2),(0,2),(-1,1),(-1,-1)]]
+    canvas # drawFigure path
 drawSymbol _ f sc canvas (TextArticulation s) = return ()
 
 ledgerLine :: (Point -> Point) -> Canvas -> Int -> UI()
