@@ -15,14 +15,15 @@ import Data.IORef
 
 navbar :: IORef ViewState -> UI Element
 navbar state = row
-    [ totalButton "|<"  (Nav.toStart    ) state
+    [ totalButton "0"   (Nav.toStart   ) state
+    , totalButton "<<"  (Nav.fastbackward ) state
     , totalButton "<"   (Nav.backward   ) state
     , totalButton ">"   (Nav.forward    ) state
-    , totalButton ">|"  (Nav.toEnd      ) state
+    , totalButton ">>"  (Nav.fastforward ) state
     , totalButton "^"   (Nav.up         ) state
     , totalButton "v"   (Nav.down       ) state
-    , totalButton "<->" (Nav.stretch    ) state
-    , totalButton ">-<" (Nav.squeeze    ) state
+    , totalButton "<>" (Nav.stretch    ) state
+    , totalButton "><" (Nav.squeeze    ) state
     , totalButton "+"   (Nav.larger     ) state
     , totalButton "-"   (Nav.smaller    ) state
     ]

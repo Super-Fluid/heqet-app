@@ -30,8 +30,17 @@ forward     vs = let
     nudge = timeSpan / 4
     in vs & startTime %~ (+ nudge) & endTime  %~ (+ nudge)
 
-toEnd    :: ViewState -> ViewState
-toEnd       vs = vs -- TODO
+fastbackward :: ViewState -> ViewState
+fastbackward    vs = let
+    timeSpan = vs^.endTime - vs^.startTime
+    nudge = timeSpan
+    in vs & startTime %~ (subtract nudge) & endTime  %~ (subtract nudge)
+
+fastforward  :: ViewState -> ViewState
+fastforward     vs = let
+    timeSpan = vs^.endTime - vs^.startTime
+    nudge = timeSpan
+    in vs & startTime %~ (+ nudge) & endTime  %~ (+ nudge)
 
 up       :: ViewState -> ViewState
 up          vs = vs & topStaff %~ (subtract 1) & bottomStaff %~ (subtract 1)
