@@ -69,11 +69,11 @@ dot staffN staffPos pit viewstate canvas = let
 blackFill :: Canvas -> UI ()
 blackFill canvas = canvas # set' UI.fillStyle (UI.htmlColor "black")
 
-thinLine :: Canvas -> UI ()
-thinLine canvas = canvas # set' strokeStyle "black" >> canvas # set' lineWidth 1 >> return ()
+thinLine :: (PX -> PX) -> Canvas -> UI ()
+thinLine sc canvas = canvas # set' strokeStyle "black" >> canvas # set' lineWidth (sc 0.2) >> return ()
 
-thickLine :: Canvas -> UI ()
-thickLine canvas = canvas # set' strokeStyle "black" >> canvas # set' lineWidth 2.6 >> return ()
+thickLine :: (PX -> PX) -> Canvas -> UI ()
+thickLine sc canvas = canvas # set' strokeStyle "black" >> canvas # set' lineWidth (sc 0.52) >> return ()
 
 textFill :: Canvas -> UI ()
 textFill canvas = do
@@ -114,6 +114,7 @@ staffLines viewstate canvas = do
         stopX = calcX (viewstate^.endTime) viewstate
         staffNs = [(viewstate^.topStaff)..(viewstate^.bottomStaff)]
         ys = map (\n -> calcY n 0 viewstate) staffNs
+    canvas # thinLine (*(viewstate^.staffSize))
     mapM_ (\y -> lines5 (viewstate^.staffSize) startX stopX y canvas) ys
 
 lines5 :: PX -> PX -> PX -> PX -> Canvas -> UI ()
@@ -169,23 +170,23 @@ function, which turns staff units to px.
 
 -}
 drawSymbol :: StaffPosition -> (Point -> Point) -> (PX -> PX) -> Canvas -> Symbol' -> UI ()
-drawSymbol _ f _ canvas (NoteHead X) = do
+drawSymbol _ f sc canvas (NoteHead X) = do
     let 
         slash = map f [(0,-1),(2,1)]
         backslash = map f [(0,1),(2,-1)]
-    canvas # thinLine
+    canvas # thinLine sc
     canvas # drawPath slash
     canvas # drawPath backslash
 drawSymbol _ f sc canvas (NoteHead Breve) = do
-    canvas # thinLine
+    canvas # thinLine sc
     let paths = (map.map) f [[(0,-1.5),(0,1.5)],[(0,0.75),(3,0.75)],[(0,-0.75),(3,-0.75)],[(3,-1.5),(3,1.5)]]
     canvas # drawFigure paths
 drawSymbol _ f sc canvas (NoteHead Whole) = do
-    canvas # thinLine
+    canvas # thinLine sc
     let paths = (map.map) f [[(0,0),(1.5,1),(3,0),(1.5,-1),(0,0)]]
     canvas # drawFigure paths
 drawSymbol _ f sc canvas (NoteHead Half) = do
-    canvas # thinLine
+    canvas # thinLine sc
     let paths = (map.map) f [[(0,0),(1,1),(2,0),(1,-1),(0,0)]]
     canvas # drawFigure paths
 drawSymbol _ f sc canvas (NoteHead Filled) = do
@@ -194,81 +195,81 @@ drawSymbol _ f sc canvas (NoteHead Filled) = do
     let points = map f [(0,0),(1,1),(2,0),(1,-1),(0,0)]
     mapM_ (\p -> canvas # lineTo p) points
     canvas # fill
-drawSymbol _ f _ canvas (Stem Up) = do
+drawSymbol _ f sc canvas (Stem Up) = do
     let
         stem = map f [(2,0),(2,7)]
-    canvas # thinLine
+    canvas # thinLine sc
     canvas # drawPath stem
-drawSymbol _ f _ canvas (Stem Down) = do
+drawSymbol _ f sc canvas (Stem Down) = do
     let
         stem = map f [(0,0),(0,-7)]
-    canvas # thinLine
+    canvas # thinLine sc
     canvas # drawPath stem
-drawSymbol _ f _ canvas (Flags Up n) = do
+drawSymbol _ f sc canvas (Flags Up n) = do
     let
         flag :: NumFlags -> UI ()
         flag x = do
             let path = map f [(2,7-(fromIntegral x)),(4,7-(fromIntegral x))]
-            canvas # thickLine
+            canvas # thickLine sc
             canvas # drawPath path
     mapM_ flag [0..(n-1)]
-drawSymbol _ f _ canvas (Flags Down n) = do
+drawSymbol _ f sc canvas (Flags Down n) = do
     let
         flag :: NumFlags -> UI ()
         flag x = do
             let path = map f [(0,(fromIntegral x)-7),(2,(fromIntegral x)-7)]
-            canvas # thickLine
+            canvas # thickLine sc
             canvas # drawPath path
     mapM_ flag [0..(n-1)]
-drawSymbol _ f _ canvas (Accidental Flat) = do
+drawSymbol _ f sc canvas (Accidental Flat) = do
     let
         flat = map f [(-2,2),(-2,-1),(-1,0.6),(-2,0.6)]
-    canvas # thinLine
+    canvas # thinLine sc
     canvas # drawPath flat
-drawSymbol _ f _ canvas (Accidental DoubleFlat) = do
+drawSymbol _ f sc canvas (Accidental DoubleFlat) = do
     let
         flatflat = map f [(-2,2),(-2,-1),(-1,0.6),(-2,0.6),(-3,0.6),(-3,2),(-3,-1),(-2,0.6),(-3,0.6)]
-    canvas # thinLine
+    canvas # thinLine sc
     canvas # drawPath flatflat
-drawSymbol _ f _ canvas (Accidental Natural) = do
+drawSymbol _ f sc canvas (Accidental Natural) = do
     let
         natural = (map.map) f [[(-2,2),(-2,-0.5),(-1,-0.5)],[(-2,0.5),(-1,0.5),(-1,-2)]]
-    canvas # thinLine
+    canvas # thinLine sc
     canvas # drawFigure natural
-drawSymbol _ f _ canvas (Accidental Sharp) = do
+drawSymbol _ f sc canvas (Accidental Sharp) = do
     let
         sharp = (map.map) f [[(-2,-2),(-2,1.8)],[(-1,-1.8),(-1,2)],[(-2.5,0.5),(-0.5,0.8)],[(-2.5,-0.8),(-0.5,-0.5)]]
-    canvas # thinLine
+    canvas # thinLine sc
     canvas # drawFigure sharp
-drawSymbol _ f _ canvas (Accidental DoubleSharp) = do
+drawSymbol _ f sc canvas (Accidental DoubleSharp) = do
     let
         sharpsharp = (map.map) f [[(-2.5,-1),(-0.5,1)],[(-2.5,1),(-0.5,-1)]]
-    canvas # thinLine
+    canvas # thinLine sc
     canvas # drawFigure sharpsharp
-drawSymbol _ f _ canvas (SimpleArticulation updn Marcato) =
-    invertibleArticulation f canvas updn [[(0,0),(1,1),(2,0)]]
-drawSymbol _ f _ canvas (SimpleArticulation updn Stopped) = 
-    invertibleArticulation f canvas updn [[(0,0),(1,0),(1,1),(0,1),(0,0)]]
-drawSymbol _ f _ canvas (SimpleArticulation updn Tenuto) =
-    invertibleArticulation f canvas updn [[(0,0),(2,0)]]
-drawSymbol _ f _ canvas (SimpleArticulation updn Staccatissimo) =
-    invertibleArticulation f canvas updn [[(0,0),(0,2)]]
-drawSymbol _ f _ canvas (SimpleArticulation updn Accent) =
-    invertibleArticulation f canvas updn [[(0,0),(2,0.75),(0,1.5)]]
+drawSymbol _ f sc canvas (SimpleArticulation updn Marcato) =
+    invertibleArticulation f sc canvas updn [[(0,0),(1,1),(2,0)]]
+drawSymbol _ f sc canvas (SimpleArticulation updn Stopped) = 
+    invertibleArticulation f sc canvas updn [[(0,0),(1,0),(1,1),(0,1),(0,0)]]
+drawSymbol _ f sc canvas (SimpleArticulation updn Tenuto) =
+    invertibleArticulation f sc canvas updn [[(0,0),(2,0)]]
+drawSymbol _ f sc canvas (SimpleArticulation updn Staccatissimo) =
+    invertibleArticulation f sc canvas updn [[(0,0),(0,2)]]
+drawSymbol _ f sc canvas (SimpleArticulation updn Accent) =
+    invertibleArticulation f sc canvas updn [[(0,0),(2,0.75),(0,1.5)]]
 drawSymbol _ f sc canvas (SimpleArticulation updn Staccato) =
-    invertibleArticulation f canvas updn [[(1,0),(1,0.5)]]
-drawSymbol _ f _ canvas (SimpleArticulation updn Portato) =
-    invertibleArticulation f canvas updn [[(0,0),(2,0)],[(0,0.5),(2,1.25),(0,2)]]
-drawSymbol _ f _ canvas (Markup s) = do
+    invertibleArticulation f sc canvas updn [[(1,0),(1,0.5)]]
+drawSymbol _ f sc canvas (SimpleArticulation updn Portato) =
+    invertibleArticulation f sc canvas updn [[(0,0),(2,0)],[(0,0.5),(2,1.25),(0,2)]]
+drawSymbol _ f sc canvas (Markup s) = do
     canvas # textFill
     canvas # fillText s (f(0,10))
-drawSymbol _ f _ canvas (TextDynamic s) = do
+drawSymbol _ f sc canvas (TextDynamic s) = do
     canvas # textFill
     canvas # fillText s (f(0,-10))
-drawSymbol _ f _ canvas (TextMeter s) = do
+drawSymbol _ f sc canvas (TextMeter s) = do
     canvas # textFill
     canvas # fillText s (f(0,0))
-drawSymbol _ f _ canvas (KeyChange n) = do
+drawSymbol _ f sc canvas (KeyChange n) = do
     canvas # textFill
     let s = if n>0 
         then show n ++ "#"
@@ -276,47 +277,47 @@ drawSymbol _ f _ canvas (KeyChange n) = do
             then show (-n) ++ "b"
             else "0"
     canvas # fillText s (f(0,4))
-drawSymbol _ f _ canvas (Barline) = do
+drawSymbol _ f sc canvas (Barline) = do
     let 
         bottom = f (0,-4)
         top = f (0,4)
-    canvas # thinLine
+    canvas # thinLine sc
     canvas # beginPath
     canvas # moveTo bottom
     canvas # lineTo top
     canvas # stroke 
-drawSymbol _ f _ canvas (Clef Treble) = do
+drawSymbol _ f sc canvas (Clef Treble) = do
     let
         points = [(0,0),(-2,-2),(-4,0),(0,4),(-2,6),(-2,-4)] :: [Point]
         path = map f (points & traverse._2 %~ (subtract 2))
-    canvas # thinLine
+    canvas # thinLine sc
     canvas # drawPath path
-drawSymbol _ f _ canvas (Clef Alto) = do
+drawSymbol _ f sc canvas (Clef Alto) = do
     let
         figure = (map.map) f [[(-3,-4),(-3,4)],[(-2,-4),(0,-2),(-2,0),(0,2),(-2,4)]]
-    canvas # thinLine
+    canvas # thinLine sc
     canvas # drawFigure figure
-drawSymbol _ f _ canvas (Clef Treble8) = do
+drawSymbol _ f sc canvas (Clef Treble8) = do
     let
         points = [[(0,0),(-2,-2),(-4,0),(0,4),(-2,6),(-2,-4)]]  :: [[Point]]
         figure = (map.map) f (points & traverse.traverse._2 %~ (subtract 2))
-    canvas # thinLine
+    canvas # thinLine sc
     canvas # drawFigure figure
     canvas # textFill
     canvas # fillText "8" (f(-2,-6))
-drawSymbol _ f _ canvas (Clef Tenor) = do
+drawSymbol _ f sc canvas (Clef Tenor) = do
     let
         points = [[(-3,-4),(-3,4)],[(-2,-4),(0,-2),(-2,0),(0,2),(-2,4)]] :: [[Point]]
         figure = (map.map) f (points & traverse.traverse._2 %~ (+2))
-    canvas # thinLine
+    canvas # thinLine sc
     canvas # drawFigure figure
-drawSymbol _ f _ canvas (Clef Bass) = do
+drawSymbol _ f sc canvas (Clef Bass) = do
     let
         points = [(-2,-5),(0,-1),(0,1),(-2,1.5),(-2,-1)] :: [Point]
         path = map f (points & traverse._2 %~ (+2))
-    canvas # thinLine
+    canvas # thinLine sc
     canvas # drawPath path
-drawSymbol _ f _ canvas (Clef (CustomClef s)) = do
+drawSymbol _ f sc canvas (Clef (CustomClef s)) = do
     canvas # textFill
     canvas # fillText s (f(-3,0))
 drawSymbol _ f sc canvas (Rest RBreve) = do
@@ -340,26 +341,26 @@ drawSymbol _ f sc canvas (Rest R2) = do
 drawSymbol _ f sc canvas (Rest R4) = do
     let
         path = map f [(0,3),(1,2),(0,1),(1,0),(0,-1),(1,-2)]
-    canvas # thinLine
+    canvas # thinLine sc
     canvas # drawPath path
 drawSymbol _ f sc canvas (Rest R8) = do
-    restStem f canvas 1
-    restFlags f canvas 1
+    restStem f sc canvas 1
+    restFlags f sc canvas 1
 drawSymbol _ f sc canvas (Rest R16) = do
-    restStem f canvas 2
-    restFlags f canvas 2
+    restStem f sc canvas 2
+    restFlags f sc canvas 2
 drawSymbol _ f sc canvas (Rest R32) = do
-    restStem f canvas 3
-    restFlags f canvas 3
+    restStem f sc canvas 3
+    restFlags f sc canvas 3
 drawSymbol _ f sc canvas (Rest R64) = do
-    restStem f canvas 4
-    restFlags f canvas 4
+    restStem f sc canvas 4
+    restFlags f sc canvas 4
 drawSymbol _ f sc canvas (Rest R128) = do
-    restStem f canvas 5
-    restFlags f canvas 5
+    restStem f sc canvas 5
+    restFlags f sc canvas 5
 drawSymbol _ f sc canvas (Dotting n) = return ()
-drawSymbol _ f _ canvas (Tie) = return ()
-drawSymbol _ f _ canvas (Slur updown) = return ()
+drawSymbol _ f sc canvas (Tie) = return ()
+drawSymbol _ f sc canvas (Slur updown) = return ()
 drawSymbol staffPos f sc canvas (LedgerLines) = do
     let
         extra1 = if (staffPos `mod` 2 /= 0) then 1 else 0
@@ -368,9 +369,9 @@ drawSymbol staffPos f sc canvas (LedgerLines) = do
              else if staffPos >= 6
                   then map (subtract extra1) [0,-2..(6-staffPos)]
                   else []
-    canvas # thinLine
+    canvas # thinLine sc
     mapM_ (ledgerLine f canvas) ys
-drawSymbol _ f _ canvas (InsertionPoint) = return ()
+drawSymbol _ f sc canvas (InsertionPoint) = return ()
 drawSymbol _ f sc canvas (Color clr) = do
     let fillstyle = fromJust $ lookup clr colorTable
     canvas # set' UI.fillStyle fillstyle
@@ -388,29 +389,29 @@ drawSymbol _ f sc canvas (TextArticulation s) = return ()
 ledgerLine :: (Point -> Point) -> Canvas -> Int -> UI()
 ledgerLine f canvas y = canvas # drawPath (map f [(-0.5,(fromIntegral y)),(3,(fromIntegral y))])
 
-restStem :: (Point -> Point) -> Canvas -> NumFlags -> UI()
-restStem f canvas n = do
+restStem :: (Point -> Point) -> (PX -> PX) ->  Canvas -> NumFlags -> UI()
+restStem f sc canvas n = do
     let 
         path = map f [(1,(fromIntegral n)+1),(1,-1)]
-    canvas # thinLine
+    canvas # thinLine sc
     canvas # drawPath path
 
-restFlags :: (Point -> Point) -> Canvas -> NumFlags -> UI()
-restFlags f canvas n = do
+restFlags :: (Point -> Point) -> (PX -> PX) ->  Canvas -> NumFlags -> UI()
+restFlags f sc canvas n = do
     let
         points = [(1,0),(0,0.5),(0,0)]
         shiftBy y ps = ps & traverse._2 %~ (+(fromIntegral y))
         paths = (map.map) f $ map (\y -> shiftBy y points) [1..n]
-    canvas # thinLine
+    canvas # thinLine sc
     canvas # drawFigure paths
 
-invertibleArticulation :: (Point -> Point) -> Canvas -> UpDown -> [[Point]] -> UI()
-invertibleArticulation f canvas updn points = do
+invertibleArticulation :: (Point -> Point) -> (PX -> PX) ->  Canvas -> UpDown -> [[Point]] -> UI()
+invertibleArticulation f sc canvas updn points = do
     let
         baseY = case updn of Up -> 8; Down -> -8
         inverter = case updn of Up -> 1; Down -> -1
         path = (map.map) (f.(\(x,y) -> (x,baseY+(y*inverter)))) points
-    canvas # thinLine
+    canvas # thinLine sc
     canvas # drawFigure path
 
 drawPath :: [Point] -> Canvas -> UI ()
@@ -425,7 +426,7 @@ drawFigure pss canvas = mapM_ (\ps -> drawPath ps canvas) pss
 drawHeadingSymbol :: StaffPosition -> (Point -> Point) -> (PX -> PX) -> Canvas -> HeadingSymbol' -> UI ()
 drawHeadingSymbol pos f sc canvas (ClefH c) = drawSymbol pos f sc canvas (Clef c)
 drawHeadingSymbol pos f sc canvas (KeyH n) = drawSymbol pos f sc canvas (KeyChange n)
-drawHeadingSymbol _ f _ canvas (TextMeterH s) = return ()
-drawHeadingSymbol _ f _ canvas (TopStaffBracket) = return ()
-drawHeadingSymbol _ f _ canvas (BottomStaffBracket) = return ()
-drawHeadingSymbol _ f _ canvas (InstName s) = return ()
+drawHeadingSymbol _ f sc canvas (TextMeterH s) = return ()
+drawHeadingSymbol _ f sc canvas (TopStaffBracket) = return ()
+drawHeadingSymbol _ f sc canvas (BottomStaffBracket) = return ()
+drawHeadingSymbol _ f sc canvas (InstName s) = return ()
