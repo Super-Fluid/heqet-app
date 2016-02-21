@@ -259,7 +259,7 @@ drawSymbol _ f sc canvas (SimpleArticulation updn Accent) =
 drawSymbol _ f sc canvas (SimpleArticulation updn Staccato) =
     invertibleArticulation f sc canvas updn [[(1,0),(1,0.5)]]
 drawSymbol _ f sc canvas (SimpleArticulation updn Portato) =
-    invertibleArticulation f sc canvas updn [[(0,0),(2,0)],[(0,0.5),(2,1.25),(0,2)]]
+    invertibleArticulation f sc canvas updn [[(0,1),(2,1)],[(1,0),(1,0.5)]]
 drawSymbol _ f sc canvas (Markup s) = do
     canvas # textFill
     canvas # fillText s (f(0,10))
