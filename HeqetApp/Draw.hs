@@ -183,7 +183,7 @@ drawSymbol _ f sc canvas (NoteHead Breve) = do
     canvas # drawFigure paths
 drawSymbol _ f sc canvas (NoteHead Whole) = do
     canvas # thinLine sc
-    let paths = (map.map) f [[(0,0),(1.5,1),(3,0),(1.5,-1),(0,0)]]
+    let paths = (map.map) f [[(0,0),(1,1),(2,1),(3,0),(2,-1),(1,-1),(0,0)]]
     canvas # drawFigure paths
 drawSymbol _ f sc canvas (NoteHead Half) = do
     canvas # thinLine sc
