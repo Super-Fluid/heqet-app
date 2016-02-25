@@ -2,6 +2,8 @@ module HeqetApp.Buttons where
 
 import HeqetApp.Types
 
+import Heqet.Types
+
 import qualified Graphics.UI.Threepenny as UI
 import Graphics.UI.Threepenny.Core
 import Graphics.UI.Threepenny.Events

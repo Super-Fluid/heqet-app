@@ -10,6 +10,8 @@ an html5 canvas using the Threepenny-GUI interface.
 
 import HeqetApp.Types
 
+import Heqet.Types
+
 import qualified Graphics.UI.Threepenny as UI
 import Graphics.UI.Threepenny.Core
 import Graphics.UI.Threepenny.Attributes
@@ -79,7 +81,7 @@ textFill :: Canvas -> UI ()
 textFill canvas = do
     canvas # blackFill
 
-colorTable :: [(HeqetApp.Types.Color,FillStyle)]
+colorTable :: [(Heqet.Types.Color,FillStyle)]
 colorTable = 
     [ (DarkGreen, "#008800")
     , (Brown, "#774400")
@@ -93,7 +95,7 @@ colorTable =
     , (Grey, "#aaaaaa")
     ] & traverse._2 %~ htmlColor
 
-colorCoordinates :: [(HeqetApp.Types.Color,[Point])]
+colorCoordinates :: [(Heqet.Types.Color,[Point])]
 colorCoordinates = 
     [ (DarkGreen, [(-2,-1.5),(-0.5,-3)])
     , (Brown, [(-2,0),(-2,1.5)])
@@ -359,7 +361,7 @@ drawSymbol _ f sc canvas (Rest R128) = do
     restStem f sc canvas 5
     restFlags f sc canvas 5
 drawSymbol _ f sc canvas (Dotting n) = return ()
-drawSymbol _ f sc canvas (Tie) = return ()
+drawSymbol _ f sc canvas (TieS) = return ()
 drawSymbol _ f sc canvas (Slur updown) = return ()
 drawSymbol staffPos f sc canvas (LedgerLines) = do
     let

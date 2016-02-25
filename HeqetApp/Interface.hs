@@ -7,6 +7,8 @@ import HeqetApp.Types
 import HeqetApp.Buttons
 import qualified HeqetApp.Interface.Navbar as Nav
 
+import Heqet.Types
+
 import qualified Graphics.UI.Threepenny as UI
 import Graphics.UI.Threepenny.Core
 import Graphics.UI.Threepenny.Attributes
@@ -38,13 +40,13 @@ panels =
     
     , note
     , accidental
-    , duration
+    , durationpanel
     , dynamics
     , articulation 
     , ties  
     , instrument
-    , key
-    , clef
+    , keypanel
+    , clefpanel
     , meter
     , fingering 
     , lilypond
@@ -154,8 +156,8 @@ instrument state = makeDefaultPanel state "Instrument"
     , const $ string "info on instrument"
     ]
 
-key :: (IORef AppState) -> UI Element
-key state = makeDefaultPanel state "Key" 
+keypanel :: (IORef AppState) -> UI Element
+keypanel state = makeDefaultPanel state "Key" 
     [ simpleButton "auto" id
     , simpleButton "remove" id
     , simpleButton "major" id
@@ -174,8 +176,8 @@ key state = makeDefaultPanel state "Key"
     , simpleButton "B" id
     ]
 
-clef :: (IORef AppState) -> UI Element
-clef state = makeDefaultPanel state "Clef" 
+clefpanel :: (IORef AppState) -> UI Element
+clefpanel state = makeDefaultPanel state "Clef" 
     [ simpleButton "auto" id
     , simpleButton "remove" id
     , simpleButton "treble" id
@@ -359,8 +361,8 @@ accidental state = makeDefaultPanel state "Accidental"
     , simpleButton "##" id
     ]
 
-duration :: (IORef AppState) -> UI Element
-duration state = makeDefaultPanel state "Duration" 
+durationpanel :: (IORef AppState) -> UI Element
+durationpanel state = makeDefaultPanel state "Duration" 
     [ const $ string "sets note just entered, or all in selection"
     , simpleButton "\\breve" id 
     , simpleButton "1" id

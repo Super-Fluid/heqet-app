@@ -2,6 +2,8 @@
 
 module HeqetApp.Types where
 
+import Heqet.Types
+
 import Graphics.UI.Threepenny.Canvas 
     (FillStyle
     ,htmlColor
@@ -11,95 +13,11 @@ import Control.Lens
 
 type AppState = (Int,Music)
 
-type Music = () -- will change to Heqet soon
-
 data Comparison = LE | LEQ | Equal | GEQ | GE
     deriving (Show,Eq)
 
 data AddRemove = Add | Remove
     deriving (Show,Eq)
-
-{- will be taken from the heqet library -}
-
-data Accidental = DoubleFlat | Flat | Natural | Sharp | DoubleSharp 
-    deriving (Eq, Ord, Enum, Bounded,Show,Read)
-
-data Clef = Treble | Alto | Treble8 | Tenor | Bass | CustomClef String
-    deriving (Eq, Show, Read)
-
-data SimpleArticulation = Marcato | Stopped | Tenuto | Staccatissimo | Accent | Staccato | Portato
-    deriving (Eq, Show, Read)
-
-type PointInTime = Rational
-
--- New types:
-
--- Probably move these into the Heqet library..
-
-type StaffPosition = Int -- probably between -16 and 16 or not much beyond that
-
-data UpDown = Up | Down
-    deriving (Eq,Show,Read)
-data Rest = RBreve | R1 | R2 | R4 | R8 | R16 | R32 | R64 | R128 
-    deriving (Eq,Show,Read)
-
-type TextDynamic = String
-type TextMeter = String
-type TextArticulation = String
-
-data NoteHead = X | Breve | Whole | Half | Filled
-    deriving (Show,Eq,Read)
-type NumFlags = Int
-
-type StaffN = Int
-
-data Color = 
-    DarkGreen
-    | Brown
-    | DarkBlue
-    | Red
-    | LightBlue
-    | Purple
-    | Yellow
-    | Orange
-    | Pink
-    | Grey
-    deriving (Show,Eq,Read)
-
-data Symbol' = 
-    NoteHead NoteHead
-    | Stem UpDown
-    | Flags UpDown NumFlags
-    | Accidental Accidental
-    | SimpleArticulation UpDown SimpleArticulation
-    | Markup String
-    | TextDynamic TextDynamic
-    | TextMeter TextMeter
-    | KeyChange Int
-    | Barline
-    | Clef Clef
-    | Rest Rest
-    | Tie
-    | Slur UpDown
-    | LedgerLines
-    | InsertionPoint
-    | Color Color
-    | Selection
-    | Dotting NumFlags
-    | TextArticulation TextArticulation
-    deriving (Eq,Show,Read)
-
-data HeadingSymbol' = 
-    ClefH Clef
-    | KeyH Int
-    | TextMeterH TextMeter
-    | TopStaffBracket
-    | BottomStaffBracket
-    | InstName String
-    deriving (Eq,Show,Read)
-
-type Symbol = (Symbol',StaffN,StaffPosition,PointInTime)
-type HeadingSymbol = (HeadingSymbol',StaffN)
 
 exampleSymbols :: [Symbol]
 exampleSymbols =
