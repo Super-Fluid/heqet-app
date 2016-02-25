@@ -4,6 +4,7 @@ module HeqetApp.Types where
 
 import Heqet.Types
 
+import Graphics.UI.Threepenny.Core
 import Graphics.UI.Threepenny.Canvas 
     (FillStyle
     ,htmlColor
@@ -12,12 +13,15 @@ import Graphics.UI.Threepenny.Canvas
 import Control.Lens
 
 type AppState = (Int,Music)
+startingAppState = (0,[]) :: AppState
 
 data Comparison = LE | LEQ | Equal | GEQ | GE
     deriving (Show,Eq)
 
 data AddRemove = Add | Remove
     deriving (Show,Eq)
+
+data Mutator = PureMutator (AppState -> AppState) | IOMutator (AppState -> IO AppState)
 
 exampleSymbols :: [Symbol]
 exampleSymbols =

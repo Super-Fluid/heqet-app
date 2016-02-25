@@ -1,4 +1,5 @@
 import Control.Monad
+import Control.Applicative
 
 import HeqetApp.Types
 import qualified HeqetApp.Draw
@@ -11,7 +12,10 @@ import qualified Graphics.UI.Threepenny as UI
 import Graphics.UI.Threepenny.Core
 import Graphics.UI.Threepenny.Attributes
 import Graphics.UI.Threepenny.Events
+import Reactive.Threepenny
 import Data.IORef
+
+import System.IO.Unsafe -- NOOOOO
 
 main :: IO ()
 main = do
@@ -34,6 +38,19 @@ setup window = do
         , _bottomStaff = 6
         , _staffSize = 5
         }
+        eKeyboard = never :: Event Mutator
+        eButtons = never :: Event Mutator
+        eClicks = never :: Event Mutator
+        input = unions [eKeyboard, eButtons, eClicks]
+        fss = map doMutations <$> input
+        fs = concatenate <$> fss
+    
+    appState <- accumE startingAppState fs
+    
+    (eCanvasSize, postCanvasSize) <- liftIO $ newEvent
+    let
+        eNavbar = never :: Event (ViewState -> ViewState)
+    
 {-        
     return paneldiv #+ [column $
         (HeqetApp.Interface.navbar viewStateRef)
@@ -58,3 +75,8 @@ setup window = do
     UI.start timer
     -}
     return ()
+
+-- ARRGHGHGH
+doMutations :: Mutator -> (AppState -> AppState)
+doMutations (PureMutator f) = f
+doMutations (IOMutator f) = unsafePerformIO . f
