@@ -7,6 +7,7 @@ import qualified HeqetApp.Interface
 
 import qualified Heqet
 import Heqet.Types
+import qualified Heqet.Output.Symbols
 
 import qualified Graphics.UI.Threepenny as UI
 import Graphics.UI.Threepenny.Core
@@ -62,7 +63,10 @@ setup window = do
     
     onEvent eSumState $ \(appState,viewState) -> do
         canvas # UI.clearCanvas
-        canvas # HeqetApp.Draw.draw exampleHeading exampleSymbols viewState
+        let 
+            (x,m) = appState
+            (hsyms,syms) = Heqet.Output.Symbols.renderSymbols m () 0 
+        canvas # HeqetApp.Draw.draw hsyms syms viewState
 
         
 {-        
