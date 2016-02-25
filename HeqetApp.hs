@@ -30,27 +30,41 @@ setup window = do
     canvas <- UI.canvas #. "musicspace"
     return canvasdiv #+ [return canvas]
     
-    let defaultViewState = ViewState {
-          _startTime = 0
-        , _endTime = 10
-        , _timeScale = 100
-        , _topStaff = 1
-        , _bottomStaff = 6
-        , _staffSize = 5
-        }
+    let
         eKeyboard = never :: Event Mutator
         eButtons = never :: Event Mutator
         eClicks = never :: Event Mutator
         input = unions [eKeyboard, eButtons, eClicks]
-        fss = map doMutations <$> input
+        fss = map makeUnsafeMutations <$> input
         fs = concatenate <$> fss
-    
-    appState <- accumE startingAppState fs
-    
+        
     (eCanvasSize, postCanvasSize) <- liftIO $ newEvent
+    
+    timer <- UI.timer # set UI.interval 250
+    onEvent (UI.tick timer) $ \_ -> do
+        liftIO $ postCanvasSize (500,500)
+    UI.start timer
     let
         eNavbar = never :: Event (ViewState -> ViewState)
+        navfss = unions [eNavbar, reviseNavBar <$> eCanvasSize]
+        navfs = concatenate <$> navfss
     
+    bAppState <- accumB startingAppState fs
+    bViewState <- accumB defaultViewState navfs
+    let bSumState = (,) <$> bAppState <*> bViewState
+    let eSumState = bSumState <@ input
+    
+    -- Todo: listbox
+    
+    -- Todo: inspector
+    
+    -- Todo: history
+    
+    onEvent eSumState $ \(appState,viewState) -> do
+        canvas # UI.clearCanvas
+        canvas # HeqetApp.Draw.draw exampleHeading exampleSymbols viewState
+
+        
 {-        
     return paneldiv #+ [column $
         (HeqetApp.Interface.navbar viewStateRef)
@@ -64,19 +78,13 @@ setup window = do
     on mousedown canvas $ \e -> do
         old <- liftIO $ readIORef state
         liftIO $ writeIORef state (100,())
-        viewstate <- liftIO $ readIORef viewStateRef
-        canvas # UI.clearCanvas
-        canvas # HeqetApp.Draw.draw exampleHeading exampleSymbols viewstate
-        -}
-    {-
-    timer <- UI.timer # set UI.interval 250
-    redrawTick <- accumE (0::Int) $ (+1) <$ UI.tick timer
-    onEvent redrawTick $ \stepNum -> do
-    UI.start timer
     -}
     return ()
 
 -- ARRGHGHGH
-doMutations :: Mutator -> (AppState -> AppState)
-doMutations (PureMutator f) = f
-doMutations (IOMutator f) = unsafePerformIO . f
+makeUnsafeMutations :: Mutator -> (AppState -> AppState)
+makeUnsafeMutations (PureMutator f) = f
+makeUnsafeMutations (IOMutator f) = unsafePerformIO . f
+
+reviseNavBar :: (PX,PX) -> ViewState -> ViewState
+reviseNavBar (x,y) = id

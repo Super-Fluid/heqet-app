@@ -133,4 +133,13 @@ data ViewState = ViewState
     }
     deriving (Eq,Show,Read)
 
+defaultViewState = ViewState {
+      _startTime = 0
+    , _endTime = 10
+    , _timeScale = 100
+    , _topStaff = 1
+    , _bottomStaff = 6
+    , _staffSize = 5
+}
+
 makeLenses ''ViewState
