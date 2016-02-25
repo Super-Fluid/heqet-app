@@ -30,13 +30,22 @@ setup window = do
     paneldiv <- UI.div # set UI.id_ "paneldiv"
     canvas <- UI.canvas #. "musicspace"
     return canvasdiv #+ [return canvas]
+    panels <- HeqetApp.Interface.panels
+    return paneldiv #+ [column $
+        (HeqetApp.Interface.navbar viewStateRef)
+        : map (^._2) panels
+        ]
     
     let
         eKeyboard = never :: Event Mutator
-        eButtons = never :: Event Mutator
+        eButtons = never :: Event [Mutator]
         eClicks = never :: Event Mutator
         input = unions [eKeyboard, eButtons, eClicks]
-        fss = map makeUnsafeMutations <$> input
+        fss = unions 
+            [ map makeUnsafeMutations <$> eKeyboard
+            , (map.map) makeUnsafeMutations <$> eButtons
+            , map makeUnsafeMutations <$> eClicks
+            ]
         fs = concatenate <$> fss
         
     (eCanvasSize, postCanvasSize) <- liftIO $ newEvent
@@ -68,13 +77,6 @@ setup window = do
             (hsyms,syms) = Heqet.Output.Symbols.renderSymbols m () 0 
         canvas # HeqetApp.Draw.draw hsyms syms viewState
 
-        
-{-        
-    return paneldiv #+ [column $
-        (HeqetApp.Interface.navbar viewStateRef)
-        : map ($ state) HeqetApp.Interface.panels
-        ]
-        -}
     getBody window #+ [row [return canvasdiv, return paneldiv]]
     UI.addStyleSheet window "main.css"
     

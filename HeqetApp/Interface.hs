@@ -13,31 +13,36 @@ import qualified Graphics.UI.Threepenny as UI
 import Graphics.UI.Threepenny.Core
 import Graphics.UI.Threepenny.Attributes
 import Graphics.UI.Threepenny.Events
-import Data.IORef
+import Control.Lens hiding ((#))
 
-navbar :: IORef ViewState -> UI Element
-navbar state = row
-    [ totalButton "0"   (Nav.toStart   ) state
-    , totalButton "<<"  (Nav.fastbackward ) state
-    , totalButton "<"   (Nav.backward   ) state
-    , totalButton ">"   (Nav.forward    ) state
-    , totalButton ">>"  (Nav.fastforward ) state
-    , totalButton "^"   (Nav.up         ) state
-    , totalButton "v"   (Nav.down       ) state
-    , totalButton "<>" (Nav.stretch    ) state
-    , totalButton "><" (Nav.squeeze    ) state
-    , totalButton "+"   (Nav.larger     ) state
-    , totalButton "-"   (Nav.smaller    ) state
-    ]
+navbar :: UI (Event (ViewState -> ViewState), UI Element)
+navbar state = do
+    let items = [ totalButton "0"   (Nav.toStart   ) 
+            , totalButton "<<"  (Nav.fastbackward ) 
+            , totalButton "<"   (Nav.backward   ) 
+            , totalButton ">"   (Nav.forward    ) 
+            , totalButton ">>"  (Nav.fastforward ) 
+            , totalButton "^"   (Nav.up         ) 
+            , totalButton "v"   (Nav.down       ) 
+            , totalButton "<>" (Nav.stretch    ) 
+            , totalButton "><" (Nav.squeeze    ) 
+            , totalButton "+"   (Nav.larger     ) 
+            , totalButton "-"   (Nav.smaller    ) 
+            ]
+    items' <- sequence items
+    let el = row $ map (^._2) items'
+    let eViewtators = concatenate $ unions $ map (^._1) items'
+    return (eViewtators,el)
+    
 
-panels :: [(IORef AppState -> UI Element)]
-panels =
+panels :: [(Event [Mutators],UI Element)]
+panels =  
     [ file
     , edit
     , select
     , label
     , view
-    
+
     , note
     , accidental
     , durationpanel
@@ -51,13 +56,14 @@ panels =
     , fingering 
     , lilypond
     , marks
-    
+
     , transpose
     , functions
     , automation
     , graph
     , trim
     ]
+    
 
 --navigation state = UI.div # set text "<<< << < > >> >>> up down >-< <-> (+) (-)"
 
