@@ -15,6 +15,9 @@ import Control.Lens
 type AppState = (Int,Music)
 startingAppState = (0,[]) :: AppState
 
+makeAction :: (Music -> Music) -> (AppState -> AppState)
+makeAction f (i,m) = (i, f m)
+
 data Comparison = LE | LEQ | Equal | GEQ | GE
     deriving (Show,Eq)
 
