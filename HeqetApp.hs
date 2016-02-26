@@ -31,22 +31,23 @@ setup window = do
     canvas <- UI.canvas #. "musicspace"
     return canvasdiv #+ [return canvas]
     panels <- HeqetApp.Interface.panels
-    return paneldiv #+ [column $
-        (HeqetApp.Interface.navbar viewStateRef)
-        : map (^._2) panels
-        ]
+    navbar <- HeqetApp.Interface.navbar
+    return paneldiv #+ [column $ ( snd navbar ) : map snd panels ]
     
     let
-        eKeyboard = never :: Event Mutator
-        eButtons = never :: Event [Mutator]
-        eClicks = never :: Event Mutator
+        eKeyboard = never :: Event [Mutator]
+        eButtons = fmap concat $ unions $ map fst panels
+        eClicks = never :: Event [Mutator]
         input = unions [eKeyboard, eButtons, eClicks]
-        fss = unions 
-            [ map makeUnsafeMutations <$> eKeyboard
-            , (map.map) makeUnsafeMutations <$> eButtons
-            , map makeUnsafeMutations <$> eClicks
+        unsafeKeyboard =  map makeUnsafeMutations <$> eKeyboard
+        unsafeButtons  =  map makeUnsafeMutations <$> eButtons
+        unsafeClicks   =  map makeUnsafeMutations <$> eClicks
+        fss = unions
+            [ unsafeKeyboard
+            , unsafeButtons
+            , unsafeClicks
             ]
-        fs = concatenate <$> fss
+        fs = concatenate.concat <$> fss
         
     (eCanvasSize, postCanvasSize) <- liftIO $ newEvent
     
