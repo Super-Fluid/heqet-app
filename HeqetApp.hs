@@ -17,6 +17,7 @@ import Reactive.Threepenny
 import Data.IORef
 
 import System.IO.Unsafe -- NOOOOO
+import Control.Concurrent
 
 main :: IO ()
 main = do
@@ -38,7 +39,8 @@ setup window = do
         eKeyboard = never :: Event [Mutator]
         eButtons = fmap concat $ unions $ map fst panels
         eClicks = never :: Event [Mutator]
-        input = unions [eKeyboard, eButtons, eClicks]
+        -- eActions has a () every time the user does something
+        eActions = unions $ (const () <$> fst navbar):(map (const () <$>) [eKeyboard, eButtons, eClicks])
         unsafeKeyboard =  map makeUnsafeMutations <$> eKeyboard
         unsafeButtons  =  map makeUnsafeMutations <$> eButtons
         unsafeClicks   =  map makeUnsafeMutations <$> eClicks
@@ -63,7 +65,6 @@ setup window = do
     bAppState <- accumB startingAppState fs
     bViewState <- accumB defaultViewState navfs
     let bSumState = (,) <$> bAppState <*> bViewState
-    let eSumState = bSumState <@ input
     
     -- Todo: listbox
     
@@ -71,7 +72,9 @@ setup window = do
     
     -- Todo: history
     
-    onEvent eSumState $ \(appState,viewState) -> do
+    onEvent eActions $ const $ do
+        liftIO $ threadDelay 400 -- sorry
+        (appState,viewState) <- currentValue bSumState
         canvas # UI.clearCanvas
         let 
             (x,m) = appState
