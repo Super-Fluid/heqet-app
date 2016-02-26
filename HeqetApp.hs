@@ -16,6 +16,7 @@ import Graphics.UI.Threepenny.Events
 import Reactive.Threepenny
 import Data.IORef
 import Safe
+import Data.Ratio
 
 import System.IO.Unsafe -- NOOOOO
 import Control.Concurrent
@@ -31,7 +32,14 @@ setup window = do
     canvasdiv <- UI.div # set UI.id_ "canvasdiv"
     canvasWidthDiv <- UI.div # set UI.id_ "canvasWidthDiv"
     canvasHeightDiv <- UI.div # set UI.id_ "canvasHeightDiv"
-    return canvasdiv #+ [return canvasWidthDiv,return canvasHeightDiv]
+    viewStartTime <- UI.div # set UI.id_ "viewStartTime"
+    viewCursorTime <- UI.div # set UI.id_ "viewCursorTime"
+    return canvasdiv #+ 
+        [return canvasWidthDiv
+        ,return canvasHeightDiv
+        ,return viewStartTime
+        ,return viewCursorTime
+        ]
     paneldiv <- UI.div # set UI.id_ "paneldiv"
     canvas <- UI.canvas #. "musicspace"
     return canvasdiv #+ [return canvas]
@@ -72,6 +80,9 @@ setup window = do
     bViewState <- accumB defaultViewState navfs
     let bSumState = (,) <$> bAppState <*> bViewState
     
+    return viewStartTime # sink text (betterRationalShow._startTime <$> bViewState)
+    return viewCursorTime # sink text (pure "foo")
+    
     -- Todo: listbox
     
     -- Todo: inspector
@@ -104,3 +115,6 @@ makeUnsafeMutations (IOMutator f) = unsafePerformIO . f
 
 recalculateCanvasSize :: (PX,PX) -> ViewState -> ViewState
 recalculateCanvasSize (x,y) = id
+
+betterRationalShow :: (Integral a, Show a) => Ratio a -> String
+betterRationalShow r = (show $ numerator r) ++ "/" ++ (show $ denominator r)

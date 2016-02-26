@@ -108,3 +108,23 @@ body {
     
     background-color: #ee2222;
 }
+
+#canvasWidthDiv {
+    display: none;
+}
+
+#canvasHeightDiv {
+    display: none;
+}
+
+#viewStartTime {
+    position: absolute;
+    top: 20px;
+    left: 0px;
+}
+
+#viewCursorTime {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
