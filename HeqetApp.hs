@@ -32,7 +32,7 @@ setup window = do
     return canvasdiv #+ [return canvas]
     panels <- HeqetApp.Interface.panels
     navbar <- HeqetApp.Interface.navbar
-    return paneldiv #+ [column $ ( snd navbar ) : map snd panels ]
+    return paneldiv #+ [column $ (snd navbar) : map snd panels ]
     
     let
         eKeyboard = never :: Event [Mutator]
@@ -56,9 +56,9 @@ setup window = do
         liftIO $ postCanvasSize (500,500)
     UI.start timer
     let
-        eNavbar = never :: Event (ViewState -> ViewState)
-        navfss = unions [eNavbar, reviseNavBar <$> eCanvasSize]
-        navfs = concatenate <$> navfss
+        eNavbar = fst navbar
+        navfss = unions [eNavbar, (return.reviseNavBar) <$> eCanvasSize]
+        navfs = concatenate.concat <$> navfss
     
     bAppState <- accumB startingAppState fs
     bViewState <- accumB defaultViewState navfs
