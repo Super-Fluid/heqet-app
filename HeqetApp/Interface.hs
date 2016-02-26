@@ -13,29 +13,30 @@ import qualified Graphics.UI.Threepenny as UI
 import Graphics.UI.Threepenny.Core
 import Graphics.UI.Threepenny.Attributes
 import Graphics.UI.Threepenny.Events
-import Control.Lens hiding ((#))
+import Control.Lens hiding ((#),view,set)
 
-navbar :: UI (Event (ViewState -> ViewState), UI Element)
-navbar state = do
-    let items = [ totalButton "0"   (Nav.toStart   ) 
-            , totalButton "<<"  (Nav.fastbackward ) 
-            , totalButton "<"   (Nav.backward   ) 
-            , totalButton ">"   (Nav.forward    ) 
-            , totalButton ">>"  (Nav.fastforward ) 
-            , totalButton "^"   (Nav.up         ) 
-            , totalButton "v"   (Nav.down       ) 
-            , totalButton "<>" (Nav.stretch    ) 
-            , totalButton "><" (Nav.squeeze    ) 
-            , totalButton "+"   (Nav.larger     ) 
-            , totalButton "-"   (Nav.smaller    ) 
+navbar :: UI (Event [(ViewState -> ViewState)], UI Element)
+navbar  = do
+    let items = 
+            [ viewButton "0"   (Nav.toStart   ) 
+            , viewButton "<<"  (Nav.fastbackward ) 
+            , viewButton "<"   (Nav.backward   ) 
+            , viewButton ">"   (Nav.forward    ) 
+            , viewButton ">>"  (Nav.fastforward ) 
+            , viewButton "^"   (Nav.up         ) 
+            , viewButton "v"   (Nav.down       ) 
+            , viewButton "<>" (Nav.stretch    ) 
+            , viewButton "><" (Nav.squeeze    ) 
+            , viewButton "+"   (Nav.larger     ) 
+            , viewButton "-"   (Nav.smaller    ) 
             ]
     items' <- sequence items
     let el = row $ map (^._2) items'
-    let eViewtators = concatenate $ unions $ map (^._1) items'
+    let eViewtators = unions $ map (^._1) items'
     return (eViewtators,el)
     
 
-panels :: UI [(Event [Mutators],UI Element)]
+panels :: UI [(Event [Mutator],UI Element)]
 panels = sequence
     [ file
     , edit
@@ -65,47 +66,53 @@ panels = sequence
     ]
 
 file :: UI (Event [Mutator],UI Element)
-file = makeDefaultPanel "File" 
-    [ (never, heqetpath)
+file = makeDefaultPanel "File"
+    [ return (never, heqetpath)
     , ioButton "Open" return
     , ioButton "Save" return
     , ioButton "Embed" return
-    , (never, lypath)
+    , return (never, lypath)
     , ioButton "Export Lilypond code" return
     ]
     where 
         heqetpath = UI.input
         lypath = UI.input
 
-edit :: (IORef AppState) -> UI Element
-edit state = makeDefaultPanel "Edit" 
-    [ totalButton "copy" id
-    , totalButton "paste" id
-    , totalButton "paste without history" id
-    , totalButton "paste overlapping" id
-    , (never,  string "paste only:" )
-    , totalButton "articulation" id
-    , totalButton "dynamics" id
-    , totalButton "meter" id
-    , totalButton "key" id
-    , totalButton "clef" id
-    , totalButton "color" id
-    , totalButton "string labels" id
-    , totalButton "accidentals" id
-    , totalButton "instrument" id
-    , totalButton "staff" id
-    , totalButton "substaff" id
-    , totalButton "fingering" id
-    , totalButton "markup" id
-    , totalButton "lilypond" id
-    , simpleButton "delete" id
-    , totalButton "copy JSON" id
-    , totalButton "paste JSON" id
-    , (never,  row [totalButton "create ostinato until" id state, UI.input] )
-    ]
+edit :: UI (Event [Mutator],UI Element)
+edit = do
+    let
+        ostinatoUntilInput = UI.input
+    
+    createOstinatoButton <- totalButton "create ostinato until" id
+    
+    makeDefaultPanel "Edit"
+        [ totalButton "copy" id
+        , totalButton "paste" id
+        , totalButton "paste without history" id
+        , totalButton "paste overlapping" id
+        , return (never,  string "paste only:" )
+        , totalButton "articulation" id
+        , totalButton "dynamics" id
+        , totalButton "meter" id
+        , totalButton "key" id
+        , totalButton "clef" id
+        , totalButton "color" id
+        , totalButton "string labels" id
+        , totalButton "accidentals" id
+        , totalButton "instrument" id
+        , totalButton "staff" id
+        , totalButton "substaff" id
+        , totalButton "fingering" id
+        , totalButton "markup" id
+        , totalButton "lilypond" id
+        , simpleButton "delete" id
+        , totalButton "copy JSON" id
+        , totalButton "paste JSON" id
+        , return (createOstinatoButton^._1,  row [createOstinatoButton^._2 , ostinatoUntilInput] )
+        ]
 
-articulation :: (IORef AppState) -> UI Element
-articulation state = makeDefaultPanel state "Articulation" 
+articulation :: UI (Event [Mutator],UI Element)
+articulation = makeDefaultPanel "Articulation"
     [ simpleButton "remove all" id
     , addRemoveRow "slur" (const id)
     , addRemoveRow "staccato" (const id)
@@ -117,8 +124,8 @@ articulation state = makeDefaultPanel state "Articulation"
     , addRemoveRow "stopped" (const id)
     ]
 
-fingering :: (IORef AppState) -> UI Element
-fingering state = makeDefaultPanel state "Fingering" 
+fingering :: UI (Event [Mutator],UI Element)
+fingering = makeDefaultPanel "Fingering"
     [ simpleButton "remove" id
     , simpleButton "0" id
     , simpleButton "1" id
@@ -133,8 +140,8 @@ fingering state = makeDefaultPanel state "Fingering"
     , simpleButton "thumb" id
     ]
 
-dynamics :: (IORef AppState) -> UI Element
-dynamics state = makeDefaultPanel state "Dynamics" 
+dynamics :: UI (Event [Mutator],UI Element)
+dynamics = makeDefaultPanel "Dynamics"
     [ simpleButton "remove" id
     , simpleButton "fff" id
     , simpleButton "ff" id
@@ -146,21 +153,21 @@ dynamics state = makeDefaultPanel state "Dynamics"
     , simpleButton "ppp" id
     , simpleButton "create cresc." id
     , simpleButton "create decresc." id
-    , (never,  string "other dynamic marks:" )
+    , return (never,  string "other dynamic marks:" )
     , simpleButton "fp" id
     , simpleButton "sfz" id
     ]
 
-instrument :: (IORef AppState) -> UI Element
-instrument state = makeDefaultPanel state "Instrument" 
+instrument :: UI (Event [Mutator],UI Element)
+instrument = makeDefaultPanel "Instrument"
     [ simpleButton "assign standard instrument" id
-    , (never,  UI.input )
+    , return (never,  UI.input )
     , simpleButton "remove" id
-    , (never,  string "info on instrument" )
+    , return (never,  string "info on instrument" )
     ]
 
-keypanel :: (IORef AppState) -> UI Element
-keypanel state = makeDefaultPanel state "Key" 
+keypanel :: UI (Event [Mutator],UI Element)
+keypanel = makeDefaultPanel "Key"
     [ simpleButton "auto" id
     , simpleButton "remove" id
     , simpleButton "major" id
@@ -179,8 +186,8 @@ keypanel state = makeDefaultPanel state "Key"
     , simpleButton "B" id
     ]
 
-clefpanel :: (IORef AppState) -> UI Element
-clefpanel state = makeDefaultPanel state "Clef" 
+clefpanel :: UI (Event [Mutator],UI Element)
+clefpanel = makeDefaultPanel "Clef"
     [ simpleButton "auto" id
     , simpleButton "remove" id
     , simpleButton "treble" id
@@ -188,92 +195,117 @@ clefpanel state = makeDefaultPanel state "Clef"
     , simpleButton "treble_8" id
     , simpleButton "tenor" id
     , simpleButton "bass" id
-    , (never,  string "manual clefs are only apparent in transposed view!" )
+    , return (never,  string "manual clefs are only apparent in transposed view!" )
     ]
 
-view :: (IORef AppState) -> UI Element
-view state = makeDefaultPanel state "View" 
-    [ (never,  UI.button # set text "concert" )
-    , (never,  UI.button # set text "transposed" )
+view :: UI (Event [Mutator],UI Element)
+view = makeDefaultPanel "View"
+    [ return (never,  UI.button # set text "concert" )
+    , return (never,  UI.button # set text "transposed" )
     ]
 
-select :: (IORef AppState) -> UI Element
-select state = makeDefaultPanel state "Select" 
-    [ totalButton "all" id
-    , totalButton "none" id
-    , totalButton "invert" id
-    , (never,  row [ string "insertion point:", UI.input ] )
-    , (never,  string "refine selection by:" )
-    , filterRow "start time" (const $ const $ id)
-    , filterRow "end time" (const $ const $ id)
-    , filterRow "duration" (const $ const $ id)
-    , filterRow "pitch" (const $ const $ id)
-    , filterRow "dynamic" (const $ const $ id)
-    , filterRow "time from measure start" (const $ const $ id)
-    , (never,  row [ uiTotalButton "staff ==" return state, UI.input ] )
-    , (never,  row [ uiTotalButton "instrument ==" return state, UI.input ] )
-    , (never,  row [ uiTotalButton "has lilypond:" return state, UI.input ] )
-    , (never,  row [ uiTotalButton "measures at time:" return state, UI.input ] )
-    , totalButton "highest voice on staff" id
-    , totalButton "middle voices on staff" id
-    , totalButton "lowest voice on staff" id
-    , totalButton "highest voice on substaff" id
-    , totalButton "middle voices on substaff" id
-    , totalButton "lowest voice on substaff" id
-    , totalButton "is note" id
-    , totalButton "is rest" id
-    , totalButton "is percussion" id
-    , totalButton "is effect" id
-    , totalButton "is lyric" id
-    , (never,  string "expand selection by:" )
-    , totalButton "hold time, relax staff" id
-    , totalButton "hold time, relax substaff" id
-    , totalButton "hold time and staff, relax voice" id
-    , totalButton "hold time and substaff, relax voice" id
-    , totalButton "same rhythm" id
-    , totalButton "same rhythm on staff" id
-    , totalButton "same rhythm on substaff" id
-    , totalButton "same instrument" id
-    ]
+select :: UI (Event [Mutator],UI Element)
+select = do
+    let
+        insertionPointInput = UI.input
+        staffEqInput = UI.input
+        instEqInput = UI.input
+        hasLilypondInput = UI.input
+        measuresAtTimeInput = UI.input
+        
+        staffEqButton = totalButton "staff ==" id
+        instEqButton = totalButton "instrument ==" id
+        hasLilypondButton = totalButton "has lilypond:" id
+        measuresAtTimeButton = totalButton "measures at time:" id
+    
+    xInsertionPoint <- insertionPointInput
+    xStaffEq <- staffEqButton
+    xInstEq <- instEqButton
+    xHasLilypond <- hasLilypondButton
+    xMeasuresAtTime <- measuresAtTimeButton
+    
+    makeDefaultPanel "Select"
+        [ totalButton "all" id
+        , totalButton "none" id
+        , totalButton "invert" id
+        , return (never,  row [ string "insertion point:", insertionPointInput ] )
+        , return (never,  string "refine selection by:" )
+        , filterRow "start time" (const $ const $ id)
+        , filterRow "end time" (const $ const $ id)
+        , filterRow "duration" (const $ const $ id)
+        , filterRow "pitch" (const $ const $ id)
+        , filterRow "dynamic" (const $ const $ id)
+        , filterRow "time from measure start" (const $ const $ id)
+        , return (fst xStaffEq,  row [ staffEqButton >>= snd , staffEqInput ] )
+        , return (fst xInstEq,  row [ instEqButton >>= snd , instEqInput ] )
+        , return (fst xHasLilypond,  row [ hasLilypondButton >>= snd , hasLilypondInput ] )
+        , return (fst xMeasuresAtTime,  row [ measuresAtTimeButton >>= snd , measuresAtTimeInput ] )
+        , totalButton "highest voice on staff" id
+        , totalButton "middle voices on staff" id
+        , totalButton "lowest voice on staff" id
+        , totalButton "highest voice on substaff" id
+        , totalButton "middle voices on substaff" id
+        , totalButton "lowest voice on substaff" id
+        , totalButton "is note" id
+        , totalButton "is rest" id
+        , totalButton "is percussion" id
+        , totalButton "is effect" id
+        , totalButton "is lyric" id
+        , return (never,  string "expand selection by:" )
+        , totalButton "hold time, relax staff" id
+        , totalButton "hold time, relax substaff" id
+        , totalButton "hold time and staff, relax voice" id
+        , totalButton "hold time and substaff, relax voice" id
+        , totalButton "same rhythm" id
+        , totalButton "same rhythm on staff" id
+        , totalButton "same rhythm on substaff" id
+        , totalButton "same instrument" id
+        ]
 
-label :: (IORef AppState) -> UI Element
-label state = makeDefaultPanel state "Label" 
-    [ (never,  column (map (($state).colorRow) colorClasses) )
-    , simpleButton "remove all colors" id
-    , (never,  string "string labels:" )
-    , uiTotalButton "select" return
-    , uiTotalButton "deselect" return
-    , uiSimpleButton "add" return
-    , uiSimpleButton "remove" return
-    , (never,  UI.input # set UI.id_ "string-label" )
-    , uiSimpleButton "remove all string labels" return
-    ]
+label :: UI (Event [Mutator],UI Element)
+label = do
+    colorers <- sequence $ map colorRow colorClasses
+    let colorMutators = fmap concat $ unions $ map (^._1) colorers
+    let colorButtons = map (^._2) colorers
+    makeDefaultPanel "Label"
+        [ return (colorMutators,  column colorButtons)
+        , simpleButton "remove all colors" id
+        , return (never,  string "string labels:" )
+        , totalButton "select" id
+        , totalButton "deselect" id
+        , simpleButton "add" id
+        , simpleButton "remove" id
+        , return (never,  UI.input # set UI.id_ "string-label" )
+        , simpleButton "remove all string labels" id
+        ]
 
 colorClasses = 
-    ["darkgreen"
-    ,"brown"
-    ,"darkblue"
-    ,"red"
-    ,"lightblue"
-    ,"purple"
-    ,"yellow"
-    ,"orange"
-    ,"pink"
-    ,"grey"
+    [("darkgreen",DarkGreen)
+    ,("brown",Brown)
+    ,("darkblue",DarkBlue)
+    ,("red",Red)
+    ,("lightblue",LightBlue)
+    ,("purple",Purple)
+    ,("yellow",Yellow)
+    ,("orange",Orange)
+    ,("pink",Pink)
+    ,("grey",Grey)
     ]
 
-colorRow :: String -> (IORef AppState) -> UI Element
-colorRow bid state = row [sel, desel, clr, unclr] where
-    sel = totalButton "select" id state #. ("color-"++bid)
-    desel = totalButton "deselect" id state #. ("color-"++bid)
-    clr = simpleButton "color" id state #. ("color-"++bid)
-    unclr = simpleButton "uncolor" id state #. ("color-"++bid)
+colorRow :: (String,Color) -> UI (Event [Mutator],UI Element)
+colorRow (bid,color) = do
+    sel <- colorButton "select" bid id
+    desel <- colorButton "deselect" bid id
+    clr <- colorButton "color" bid id
+    unclr <- colorButton "uncolor" bid id
+    let items = [sel, desel, clr, unclr]
+    return (fmap concat $ unions $ map (^._1) items,row $ map (^._2) items)
 
-transpose :: (IORef AppState) -> UI Element
-transpose state = makeDefaultPanel state "Transpose" 
+transpose :: UI (Event [Mutator],UI Element)
+transpose = makeDefaultPanel "Transpose"
     [ simpleButton "oct up" id
     , simpleButton "oct down" id
-    , (never,  string "by halfsteps:" )
+    , return (never,  string "by halfsteps:" )
     , simpleButton "+1 H" id
     , simpleButton "+2 W" id
     , simpleButton "+3 m3" id
@@ -296,9 +328,9 @@ transpose state = makeDefaultPanel state "Transpose"
     , simpleButton "-9 M6" id
     , simpleButton "-10 m7" id
     , simpleButton "-11 M7" id
-    , uiSimpleButton "any:" return
-    , (never,  UI.input # set UI.id_ "halfsteps" )
-    , (never,  string "by scale degrees:" )
+    , simpleButton "any:" id
+    , return (never,  UI.input # set UI.id_ "halfsteps" )
+    , return (never,  string "by scale degrees:" )
     , simpleButton "+1" id
     , simpleButton "+2" id
     , simpleButton "+3" id
@@ -311,33 +343,33 @@ transpose state = makeDefaultPanel state "Transpose"
     , simpleButton "-4" id
     , simpleButton "-5" id
     , simpleButton "-6" id  
-    , uiSimpleButton "any:" return
-    , (never,  UI.input # set UI.id_ "scaledegrees" )
+    , simpleButton "any:" id
+    , return (never,  UI.input # set UI.id_ "scaledegrees" )
     ]
 
-inspect :: (IORef AppState) -> UI Element
-inspect state = makeDefaultPanel state "Inspect" 
-    [ (never,  string "data goes here" )
+inspect :: UI (Event [Mutator],UI Element)
+inspect = makeDefaultPanel "Inspect"
+    [ return (never,  string "data goes here" )
     ]
 
-lilypond :: (IORef AppState) -> UI Element
-lilypond state = makeDefaultPanel state "Lilypond" 
-    [ uiSimpleButton "Add function" return
-    , (never,  row [string "\"\\fermata\"", UI.input # set UI.id_ "lyfunc"] )
-    , uiSimpleButton "Add command" return
-    , (never,  row [string "\"\\foo", UI.input # set UI.id_ "lycom", string "{ ... }"] )
-    , uiSimpleButton "Add post-fix lilypond item" return
-    , (never,  row [string "\"\\fermata\"", UI.input # set UI.id_ "lywith"] )
-    , uiSimpleButton "Remove all matching input:" return
-    , uiSimpleButton "Remove all but those matching input" return
-    , (never,  row [string "matching by", UI.input # set UI.id_ "lymatch"] )
+lilypond :: UI (Event [Mutator],UI Element)
+lilypond = makeDefaultPanel "Lilypond"
+    [ simpleButton "Add function" id
+    , return (never,  row [string "\"\\fermata\"", UI.input # set UI.id_ "lyfunc"] )
+    , simpleButton "Add command" id
+    , return (never,  row [string "\"\\foo", UI.input # set UI.id_ "lycom", string "{ ... }"] )
+    , simpleButton "Add post-fix lilypond item" id
+    , return (never,  row [string "\"\\fermata\"", UI.input # set UI.id_ "lywith"] )
+    , simpleButton "Remove all matching input:" id
+    , simpleButton "Remove all but those matching input" id
+    , return (never,  row [string "matching by", UI.input # set UI.id_ "lymatch"] )
     , simpleButton "portamento" id
     , simpleButton "trill" id
     , simpleButton "...." id
     ]
 
-note :: (IORef AppState) -> UI Element
-note state = makeDefaultPanel state "Note" 
+note :: UI (Event [Mutator],UI Element)
+note = makeDefaultPanel "Note"
     [ simpleButton "A" id
     , simpleButton "B" id
     , simpleButton "C" id
@@ -347,15 +379,15 @@ note state = makeDefaultPanel state "Note"
     , simpleButton "G" id
     , simpleButton "rest" id
     , simpleButton "special effect" id
-    , (never,  string "percussion:" )
+    , return (never,  string "percussion:" )
     , simpleButton "hh" id
     , simpleButton "sn" id
     , simpleButton "..." id
     ]
 
-accidental :: (IORef AppState) -> UI Element
-accidental state = makeDefaultPanel state "Accidental" 
-    [simpleButton "remove" id
+accidental :: UI (Event [Mutator],UI Element)
+accidental = makeDefaultPanel "Accidental"
+    [ simpleButton "remove" id
     , simpleButton "auto-assign" id
     , simpleButton "bb" id
     , simpleButton "b" id
@@ -364,9 +396,9 @@ accidental state = makeDefaultPanel state "Accidental"
     , simpleButton "##" id
     ]
 
-durationpanel :: (IORef AppState) -> UI Element
-durationpanel state = makeDefaultPanel state "Duration" 
-    [ (never,  string "sets note just entered, or all in selection" )
+durationpanel :: UI (Event [Mutator],UI Element)
+durationpanel = makeDefaultPanel "Duration"
+    [ return (never,  string "sets note just entered, or all in selection" )
     , simpleButton "\\breve" id 
     , simpleButton "1" id
     , simpleButton "2" id
@@ -378,42 +410,42 @@ durationpanel state = makeDefaultPanel state "Duration"
     , simpleButton "128" id
     , simpleButton "add dot" id
     , simpleButton "remove dot" id
-    , uiSimpleButton "any rational duration:" return
-    , (never,  UI.input # set UI.id_ "setDur" )
-    , (never,  UI.br )
-    , (never,  string "multiply by:" )
+    , simpleButton "any rational duration:" id
+    , return (never,  UI.input # set UI.id_ "setDur" )
+    , return (never,  UI.br )
+    , return (never,  string "multiply by:" )
     , simpleButton "1/2" id
     , simpleButton "2/3 (triplet)" id
     , simpleButton "4/5 (pentuplet)" id
     , simpleButton "4/7 (septuplet)" id
     , simpleButton "8/9" id
     , simpleButton "8/11" id
-    , uiSimpleButton "multiply by rational:" return
-    , (never,  UI.input # set UI.id_ "multiplyDur" )
+    , simpleButton "multiply by rational:" id
+    , return (never,  UI.input # set UI.id_ "multiplyDur" )
     ]
 
-automation :: (IORef AppState) -> UI Element
-automation state = makeDefaultPanel state "Automation" 
-    [ (never,  row [string "new notes given pitch according to their key", UI.input # set UI.type_ "checkbox" # set UI.id_ "newbykey"] )
-    , (never,  row [string "new notes inherit key", UI.input # set UI.type_ "checkbox" # set UI.id_ "inheritkey"] )
-    , (never,  row [string "new notes spelled according to key", UI.input # set UI.type_ "checkbox" # set UI.id_ "spelledbykey"] )
-    , (never,  row [string "new notes in nearest octave", UI.input # set UI.type_ "checkbox" # set UI.id_ "nearest octave"] )
-    , (never,  row [string "new notes inherit dynamic", UI.input # set UI.type_ "checkbox" # set UI.id_ "inherit dynamic"] )
-    , (never,  row [string "new notes inherit instrument", UI.input # set UI.type_ "checkbox" # set UI.id_ "inheritinstrument"] )
-    , (never,  row [string "new notes inherit clef", UI.input # set UI.type_ "checkbox" # set UI.id_ "inheritclef"] )
-    , (never,  row [string "recalculate clefs when adding a note", UI.input # set UI.type_ "checkbox" # set UI.id_ "recalcclef"] )
-    , (never,  row [string "recalculate keys when adding a note", UI.input # set UI.type_ "checkbox" # set UI.id_ "recalckey"] )
+automation :: UI (Event [Mutator],UI Element)
+automation = makeDefaultPanel "Automation"
+    [ return (never,  row [string "new notes given pitch according to their key", UI.input # set UI.type_ "checkbox" # set UI.id_ "newbykey"] )
+    , return (never,  row [string "new notes inherit key", UI.input # set UI.type_ "checkbox" # set UI.id_ "inheritkey"] )
+    , return (never,  row [string "new notes spelled according to key", UI.input # set UI.type_ "checkbox" # set UI.id_ "spelledbykey"] )
+    , return (never,  row [string "new notes in nearest octave", UI.input # set UI.type_ "checkbox" # set UI.id_ "nearest octave"] )
+    , return (never,  row [string "new notes inherit dynamic", UI.input # set UI.type_ "checkbox" # set UI.id_ "inherit dynamic"] )
+    , return (never,  row [string "new notes inherit instrument", UI.input # set UI.type_ "checkbox" # set UI.id_ "inheritinstrument"] )
+    , return (never,  row [string "new notes inherit clef", UI.input # set UI.type_ "checkbox" # set UI.id_ "inheritclef"] )
+    , return (never,  row [string "recalculate clefs when adding a note", UI.input # set UI.type_ "checkbox" # set UI.id_ "recalcclef"] )
+    , return (never,  row [string "recalculate keys when adding a note", UI.input # set UI.type_ "checkbox" # set UI.id_ "recalckey"] )
     ]
 
-ties :: (IORef AppState) -> UI Element
-ties state = makeDefaultPanel state "Ties" 
+ties :: UI (Event [Mutator],UI Element)
+ties = makeDefaultPanel "Ties"
     [ simpleButton "add tie" id
     , simpleButton "remove tie" id
     , simpleButton "merge tied notes" id
     ]
 
-meter :: (IORef AppState) -> UI Element
-meter state = makeDefaultPanel state "Meter" 
+meter :: UI (Event [Mutator],UI Element)
+meter = makeDefaultPanel "Meter"
     [ simpleButton "remove" id
     , simpleButton "2/2" id
     , simpleButton "2/4" id 
@@ -428,42 +460,42 @@ meter state = makeDefaultPanel state "Meter"
     , simpleButton "7/8" id 
     , simpleButton "9/8" id 
     , simpleButton "12/8" id 
-    , uiSimpleButton "x/y" return 
-    , (never,  row [string "x", UI.input # set UI.id_ "xMeter"] )
-    , (never,  row [string "y", UI.input # set UI.id_ "yMeter"] )
-    , uiSimpleButton "sum of fractions meter" return
-    , (never,  column [string "format: (a+b+c)/d + (e+f)/g", UI.input # set UI.id_ "abcMeter"] )
+    , simpleButton "x/y" id 
+    , return (never,  row [string "x", UI.input # set UI.id_ "xMeter"] )
+    , return (never,  row [string "y", UI.input # set UI.id_ "yMeter"] )
+    , simpleButton "sum of fractions meter" id
+    , return (never,  column [string "format: (a+b+c)/d + (e+f)/g", UI.input # set UI.id_ "abcMeter"] )
     ]
 
-marks :: (IORef AppState) -> UI Element
-marks state = makeDefaultPanel state "Marks" 
+marks :: UI (Event [Mutator],UI Element)
+marks = makeDefaultPanel "Marks"
     [ simpleButton "add rehearsal mark" id 
-    , uiSimpleButton "add markup rehearsal mark" return
-    , (never,  UI.input # set UI.id_ "reheasalMarkup" )
+    , simpleButton "add markup rehearsal mark" id
+    , return (never,  UI.input # set UI.id_ "reheasalMarkup" )
     ]
 
-functions :: (IORef AppState) -> UI Element
-functions state = makeDefaultPanel state "Functions" 
+functions :: UI (Event [Mutator],UI Element)
+functions = makeDefaultPanel "Functions"
     [ simpleButton "product" id 
     ]
 
-graph :: (IORef AppState) -> UI Element
-graph state = makeDefaultPanel state "Graph" 
+graph :: UI (Event [Mutator],UI Element)
+graph = makeDefaultPanel "Graph"
     [ totalButton "undo" id
-    , (never,  string "parents: ..." )
+    , return (never,  string "parents: ..." )
     , totalButton "redo" id
-    , (never,  string "children: ..." )
+    , return (never,  string "children: ..." )
     , totalButton "identity action" id
     , totalButton "copy history from here forward" id
-    , (never,  UI.input )
-    , (never,  string "attributes for this node..." )
+    , return (never,  UI.input )
+    , return (never,  string "attributes for this node..." )
     ]
 
-trim :: (IORef AppState) -> UI Element
-trim state = set UI.id_ "trim" $ makeDefaultPanel state "Trim" 
+trim :: UI (Event [Mutator],UI Element)
+trim = makeTrimPanel "Trim"
     [ totalButton "remove history not leading to this node" id
     , totalButton "remove history not leading to any of:" id
-    , (never,  UI.input )
+    , return (never,  UI.input )
     , totalButton "remove saved values for nodes, excluding:" id
-    , (never,  UI.input )
+    , return (never,  UI.input )
     ]
