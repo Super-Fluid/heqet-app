@@ -14,6 +14,8 @@
         var context = canvas.getContext('2d');
         context.canvas.height = $(window).height();
         context.canvas.width = $(window).width() - 304;
+        $("#canvasWidthDiv").attr("value",context.canvas.width);
+        $("#canvasHeightDiv").attr("value",context.canvas.height);
     }
     
     // make the panels hide and show when you

@@ -15,6 +15,7 @@ import Graphics.UI.Threepenny.Attributes
 import Graphics.UI.Threepenny.Events
 import Reactive.Threepenny
 import Data.IORef
+import Safe
 
 import System.IO.Unsafe -- NOOOOO
 import Control.Concurrent
@@ -28,6 +29,9 @@ setup window = do
     return window # set title "Heqet"
     -- we know canvasdiv and paneldiv exist because they're in start.html
     canvasdiv <- UI.div # set UI.id_ "canvasdiv"
+    canvasWidthDiv <- UI.div # set UI.id_ "canvasWidthDiv"
+    canvasHeightDiv <- UI.div # set UI.id_ "canvasHeightDiv"
+    return canvasdiv #+ [return canvasWidthDiv,return canvasHeightDiv]
     paneldiv <- UI.div # set UI.id_ "paneldiv"
     canvas <- UI.canvas #. "musicspace"
     return canvasdiv #+ [return canvas]
@@ -55,11 +59,13 @@ setup window = do
     
     timer <- UI.timer # set UI.interval 250
     onEvent (UI.tick timer) $ \_ -> do
-        liftIO $ postCanvasSize (500,500)
+        w <- get value canvasWidthDiv
+        h <- get value canvasHeightDiv
+        liftIO $ postCanvasSize (readDef 500 w,readDef 500 h)
     UI.start timer
     let
         eNavbar = fst navbar
-        navfss = unions [eNavbar, (return.reviseNavBar) <$> eCanvasSize]
+        navfss = unions [eNavbar, (return.recalculateCanvasSize) <$> eCanvasSize]
         navfs = concatenate.concat <$> navfss
     
     bAppState <- accumB startingAppState fs
@@ -96,5 +102,5 @@ makeUnsafeMutations :: Mutator -> (AppState -> AppState)
 makeUnsafeMutations (PureMutator f) = f
 makeUnsafeMutations (IOMutator f) = unsafePerformIO . f
 
-reviseNavBar :: (PX,PX) -> ViewState -> ViewState
-reviseNavBar (x,y) = id
+recalculateCanvasSize :: (PX,PX) -> ViewState -> ViewState
+recalculateCanvasSize (x,y) = id
