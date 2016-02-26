@@ -9,6 +9,8 @@ import qualified HeqetApp.Interface.Navbar as Nav
 
 import Heqet.Types
 
+import HeqetApp.Functions
+
 import qualified Graphics.UI.Threepenny as UI
 import Graphics.UI.Threepenny.Core
 import Graphics.UI.Threepenny.Attributes
@@ -370,7 +372,7 @@ lilypond = makeDefaultPanel "Lilypond"
 
 note :: UI (Event [Mutator],UI Element)
 note = makeDefaultPanel "Note"
-    [ simpleButton "A" id
+    [ simpleButton "A" appendNote
     , simpleButton "B" id
     , simpleButton "C" id
     , simpleButton "D" id
@@ -383,7 +385,7 @@ note = makeDefaultPanel "Note"
     , simpleButton "hh" id
     , simpleButton "sn" id
     , simpleButton "..." id
-    ]
+    ]   
 
 accidental :: UI (Event [Mutator],UI Element)
 accidental = makeDefaultPanel "Accidental"
