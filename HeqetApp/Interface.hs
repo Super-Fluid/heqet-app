@@ -75,6 +75,9 @@ file = makeDefaultPanel "File"
     , ioButton "Embed" return
     , return (never, lypath)
     , ioButton "Export Lilypond code" return
+    , return (never,  row [string "concert score", UI.input # set UI.type_ "checkbox" # set UI.id_ "concertScore"] )
+    , return (never,  row [string "transposed score", UI.input # set UI.type_ "checkbox" # set UI.id_ "transposedScore"] )
+    , return (never,  row [string "parts", UI.input # set UI.type_ "checkbox" # set UI.id_ "includeParts"] )
     ]
     where 
         heqetpath = UI.input
@@ -254,6 +257,7 @@ select = do
         , totalButton "is effect" id
         , totalButton "is lyric" id
         , return (never,  string "expand selection by:" )
+        , return (never,  row [string "consider notes individually", UI.input # set UI.type_ "checkbox" # set UI.id_ "expandByEachNote"] )
         , totalButton "hold time, relax staff" id
         , totalButton "hold time, relax substaff" id
         , totalButton "hold time and staff, relax voice" id
