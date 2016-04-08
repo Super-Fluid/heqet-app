@@ -1,0 +1,41 @@
+name:           HeqetApp
+version:        0.1.0.0
+Cabal-Version:  >=1.10
+license:        GPL-3
+license-file:	License
+copyright:      Copyright (c) 2016 Isaac Reilly
+category:       Sound
+stability:      experimental
+build-type:     Custom
+author:         Isaac Reilly <isaac.g.reilly@gmail.com>
+maintainer:     Isaac Reilly <isaac.g.reilly@gmail.com>
+bug-reports:    https://github.com/Super-Fluid/history-graph/issues/
+homepage:       TODO
+synopsis:       GUI music score editor with output to Lilypond
+description:
+        put stuff here
+extra-source-files:
+executable heqet
+  main-is: HeqetApp.hs
+  hs-source-dirs: .
+  ghc-options: -funbox-strict-fields -fexcess-precision
+  extensions: 
+  other-extensions:    
+        MultiWayIf, 
+        LambdaCase, 
+        TemplateHaskell
+  other-modules:
+  build-depends:
+        base >=4.7 && <4.8, 
+        lens >=4.13 && <4.14, 
+        safe >=0.3 && <0.4, 
+        template-haskell >=2.9 && <2.10,
+        containers >= 0.3.0.0,
+        extra >= 1.4.3,
+        errors >= 2.1.2,
+        mtl >= 2.2.1,
+        threepenny-gui >= 0.6.0.6
+  default-language:    Haskell2010
+source-repository head
+  type:     git
+  location: https://github.com/Super-Fluid/heqet-app.git
