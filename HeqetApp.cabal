@@ -26,6 +26,12 @@ executable heqet
         LambdaCase, 
         TemplateHaskell
   other-modules:
+    HeqetApp.Buttons
+    HeqetApp.Draw
+    HeqetApp.Functions
+    HeqetApp.Interface
+    HeqetApp.Interface.Navbar
+    HeqetApp.Types
   build-depends:
         base, 
         lens, 
