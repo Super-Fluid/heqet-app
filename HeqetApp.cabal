@@ -27,10 +27,10 @@ executable heqet
         TemplateHaskell
   other-modules:
   build-depends:
-        base >=4.7 && <4.8, 
+        base, 
         lens, 
         safe >=0.3 && <0.4, 
-        template-haskell >=2.9 && <2.10,
+        template-haskell,
         containers >= 0.3.0.0,
         extra >= 1.4.3,
         errors >= 2.1.2,
